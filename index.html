@@ -188,9 +188,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-10-24 23:01:57 / 修改时间：23:18:02" itemprop="dateCreated datePublished" datetime="2024-10-24T23:01:57+08:00">2024-10-24</time>
+      <time title="创建时间：2024-10-24 23:01:57" itemprop="dateCreated datePublished" datetime="2024-10-24T23:01:57+08:00">2024-10-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-10-25 00:08:10" itemprop="dateModified" datetime="2024-10-25T00:08:10+08:00">2024-10-25</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -255,6 +261,9 @@
 <h3 id="5-2-主题风格"><a href="#5-2-主题风格" class="headerlink" title="5.2 主题风格"></a>5.2 主题风格</h3><p>主题风格默认是 <code>Muse</code>，界面不是很好看，最重要的是页面太窄，展示长代码行尤其不美观，可以切换到 <code>Pisces</code>。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> _config.next.yml | grep scheme</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">scheme: Muse</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">scheme: Mist</span></span><br><span class="line">scheme: Pisces</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">scheme: Gemini</span></span><br></pre></td></tr></table></figure>
 
+<p><strong>为什么 NexT 主题设置 Pisces 风格不生效？</strong></p>
+<p>不知道是 Hexo 还是 NexT 主题的 Bug，从其他主题风格（比如默认的 <code>Muse</code>）改到 <code>Pisces</code>，重新执行 <code>hexo g</code> 之后，居然不生效。分析发现 CSS 文件 <code>/css/main.css</code> 还是原来的，重复执行 <code>hexo g</code> 也不解决问题。最后的解决方案是：先执行 <code>hexo clean</code> 清理 <code>public</code> 文件夹下的数据，然后执行 <code>hexo g</code> 重新生成静态页面。</p>
+<p>通过 <code>hexo d</code> 完成仓库部署后，由于 Chrome 浏览器的缓存原因，可能需要等一会才能看到效果。也可以 F12 调出控制台，切换到 <code>Network</code> 页面，选中 <code>Disable cache</code> 后刷新页面即可清除浏览器缓存重新发起请求（测试完毕后记得去除勾选）。</p>
 <h3 id="5-3-导航栏-页面"><a href="#5-3-导航栏-页面" class="headerlink" title="5.3 导航栏 &amp; 页面"></a>5.3 导航栏 &amp; 页面</h3><p>配置导航栏：</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">menu:</span></span><br><span class="line">  <span class="attr">home:</span> <span class="string">/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-home</span></span><br><span class="line">  <span class="attr">archives:</span> <span class="string">/archives/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-archive</span></span><br><span class="line">  <span class="attr">categories:</span> <span class="string">/categories/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-th</span></span><br><span class="line">  <span class="attr">tags:</span> <span class="string">/tags/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-tags</span></span><br><span class="line">  <span class="attr">about:</span> <span class="string">/about/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-user</span></span><br><span class="line">  <span class="attr">sitemap:</span> <span class="string">/sitemap.xml</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-sitemap</span></span><br><span class="line">  <span class="comment">#schedule: /schedule/ || fa fa-calendar</span></span><br><span class="line">  <span class="comment">#commonweal: /404/ || fa fa-heartbeat</span></span><br></pre></td></tr></table></figure>
 
