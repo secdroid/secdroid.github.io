@@ -123,18 +123,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -151,6 +151,116 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2024/11/14/windows-search-path-vulnerability-caused-by-linux-path/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2024/11/14/windows-search-path-vulnerability-caused-by-linux-path/" class="post-title-link" itemprop="url">Windows 下使用 Linux 路径引发的路径搜索漏洞</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-11-15 00:20:38 / 修改时间：00:19:48" itemprop="dateCreated datePublished" datetime="2024-11-15T00:20:38+08:00">2024-11-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Windows/" itemprop="url" rel="index"><span itemprop="name">Windows</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>在 Windows 上，如果使用 Linux 形式的路径，或者错误使用 Windows 相对路径，可能引发路径搜索漏洞（Untrusted Search Path Vulnerability）。</p>
+<p>一个简单的测试用例如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;Windows.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> <span class="keyword">warning</span>(disable: 4996)</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">open_file</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* path)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    FILE* fp = <span class="built_in">fopen</span>(path, <span class="string">&quot;rb&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">fclose</span>(fp);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">open_file</span>(<span class="string">&quot;/usr/local/ssl/openssl.cnf&quot;</span>);        <span class="comment">// Bad</span></span><br><span class="line">    <span class="built_in">open_file</span>(<span class="string">&quot;\\usr\\local\\ssl\\openssl1.cnf&quot;</span>);   <span class="comment">// Bad</span></span><br><span class="line">    <span class="built_in">open_file</span>(<span class="string">&quot;.\\usr\\local\\ssl\\openssl2.cnf&quot;</span>);  <span class="comment">// Good</span></span><br><span class="line">    <span class="built_in">open_file</span>(<span class="string">&quot;usr\\local\\ssl\\openssl3.cnf&quot;</span>);     <span class="comment">// Good</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">LoadLibrary</span>(<span class="string">L&quot;/DummyTLS/dummyTLS.dll&quot;</span>);         <span class="comment">// Bad</span></span><br><span class="line">    <span class="built_in">LoadLibrary</span>(<span class="string">L&quot;\\DummyTLS\\dummyTLS1.dll&quot;</span>);      <span class="comment">// Bad</span></span><br><span class="line">    <span class="built_in">LoadLibrary</span>(<span class="string">L&quot;.\\DummyTLS\\dummyTLS2.dll&quot;</span>);     <span class="comment">// Good</span></span><br><span class="line">    <span class="built_in">LoadLibrary</span>(<span class="string">L&quot;DummyTLS\\dummyTLS3.dll&quot;</span>);        <span class="comment">// Good</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译好之后，把 EXE 放在 C 盘的某个文件夹下（为了更好地展示测试效果，请不要放在根目录下），打开 Process Monitor 监控 EXE 的行为。</p>
+<p><img src="/images/process-monitor-file-search-path.webp" alt="使用 Process Monitor 监控进程行为"></p>
+<p><strong>总结如下两点</strong>：</p>
+<ul>
+<li>Windows 不能正确处理 Linux 路径，不管分隔符是 <code>/</code> 还是 <code>\\</code><ul>
+<li>这样的路径会导致进程去磁盘根目录搜索文件</li>
+</ul>
+</li>
+<li>Windows 正确的相对路径，应该以 <code>.\\</code> 开头，或者直接以非 <code>/</code> 和 <code>\\</code> 开头<ul>
+<li>这样的路径会使用正常的搜索逻辑（当前目录、<code>PATH</code> 环境变量等）</li>
+</ul>
+</li>
+</ul>
+<p><strong>今日心得</strong>：</p>
+<ul>
+<li>Process Monitor 的 <code>NAME NOT FOUND</code> 和 <code>PATH NOT FOUND</code> 都需要留意</li>
+<li>做漏洞研究不要光看不练，要多动手实践</li>
+</ul>
+<p><strong>参考文档</strong>：</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://hackerone.com/reports/608577">https://hackerone.com/reports/608577</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ndss-symposium.org/ndss-paper/file-hijacking-vulnerability-the-elephant-in-the-room/">https://www.ndss-symposium.org/ndss-paper/file-hijacking-vulnerability-the-elephant-in-the-room/</a></li>
+<li><a target="_blank" rel="noopener" href="https://houjingyi233.com/2021/08/01/new-dll-hijacking-scenario-found-by-accident/">https://houjingyi233.com/2021/08/01/new-dll-hijacking-scenario-found-by-accident/</a></li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
