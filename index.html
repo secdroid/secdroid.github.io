@@ -188,9 +188,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-11-15 00:20:38 / 修改时间：00:19:48" itemprop="dateCreated datePublished" datetime="2024-11-15T00:20:38+08:00">2024-11-15</time>
+      <time title="创建时间：2024-11-15 00:20:38" itemprop="dateCreated datePublished" datetime="2024-11-15T00:20:38+08:00">2024-11-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-11-20 21:01:17" itemprop="dateModified" datetime="2024-11-20T21:01:17+08:00">2024-11-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -217,34 +223,14 @@
     
     <div class="post-body" itemprop="articleBody">
           <p>在 Windows 上，如果使用 Linux 形式的路径，或者错误使用 Windows 相对路径，可能引发路径搜索漏洞（Untrusted Search Path Vulnerability）。</p>
-<p>一个简单的测试用例如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;Windows.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> <span class="keyword">warning</span>(disable: 4996)</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">open_file</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* path)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    FILE* fp = <span class="built_in">fopen</span>(path, <span class="string">&quot;rb&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">fclose</span>(fp);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">open_file</span>(<span class="string">&quot;/usr/local/ssl/openssl.cnf&quot;</span>);        <span class="comment">// Bad</span></span><br><span class="line">    <span class="built_in">open_file</span>(<span class="string">&quot;\\usr\\local\\ssl\\openssl1.cnf&quot;</span>);   <span class="comment">// Bad</span></span><br><span class="line">    <span class="built_in">open_file</span>(<span class="string">&quot;.\\usr\\local\\ssl\\openssl2.cnf&quot;</span>);  <span class="comment">// Good</span></span><br><span class="line">    <span class="built_in">open_file</span>(<span class="string">&quot;usr\\local\\ssl\\openssl3.cnf&quot;</span>);     <span class="comment">// Good</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">LoadLibrary</span>(<span class="string">L&quot;/DummyTLS/dummyTLS.dll&quot;</span>);         <span class="comment">// Bad</span></span><br><span class="line">    <span class="built_in">LoadLibrary</span>(<span class="string">L&quot;\\DummyTLS\\dummyTLS1.dll&quot;</span>);      <span class="comment">// Bad</span></span><br><span class="line">    <span class="built_in">LoadLibrary</span>(<span class="string">L&quot;.\\DummyTLS\\dummyTLS2.dll&quot;</span>);     <span class="comment">// Good</span></span><br><span class="line">    <span class="built_in">LoadLibrary</span>(<span class="string">L&quot;DummyTLS\\dummyTLS3.dll&quot;</span>);        <span class="comment">// Good</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>编译好之后，把 EXE 放在 C 盘的某个文件夹下（为了更好地展示测试效果，请不要放在根目录下），打开 Process Monitor 监控 EXE 的行为。</p>
-<p><img src="/images/process-monitor-file-search-path.webp" alt="使用 Process Monitor 监控进程行为"></p>
-<p><strong>总结如下两点</strong>：</p>
-<ul>
-<li>Windows 不能正确处理 Linux 路径，不管分隔符是 <code>/</code> 还是 <code>\\</code><ul>
-<li>这样的路径会导致进程去磁盘根目录搜索文件</li>
-</ul>
-</li>
-<li>Windows 正确的相对路径，应该以 <code>.\\</code> 开头，或者直接以非 <code>/</code> 和 <code>\\</code> 开头<ul>
-<li>这样的路径会使用正常的搜索逻辑（当前目录、<code>PATH</code> 环境变量等）</li>
-</ul>
-</li>
-</ul>
-<p><strong>今日心得</strong>：</p>
-<ul>
-<li>Process Monitor 的 <code>NAME NOT FOUND</code> 和 <code>PATH NOT FOUND</code> 都需要留意</li>
-<li>做漏洞研究不要光看不练，要多动手实践</li>
-</ul>
-<p><strong>参考文档</strong>：</p>
-<ol>
-<li><a target="_blank" rel="noopener" href="https://hackerone.com/reports/608577">https://hackerone.com/reports/608577</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.ndss-symposium.org/ndss-paper/file-hijacking-vulnerability-the-elephant-in-the-room/">https://www.ndss-symposium.org/ndss-paper/file-hijacking-vulnerability-the-elephant-in-the-room/</a></li>
-<li><a target="_blank" rel="noopener" href="https://houjingyi233.com/2021/08/01/new-dll-hijacking-scenario-found-by-accident/">https://houjingyi233.com/2021/08/01/new-dll-hijacking-scenario-found-by-accident/</a></li>
-</ol>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/11/14/windows-search-path-vulnerability-caused-by-linux-path/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -298,9 +284,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-11-07 23:56:44 / 修改时间：23:56:30" itemprop="dateCreated datePublished" datetime="2024-11-07T23:56:44+08:00">2024-11-07</time>
+      <time title="创建时间：2024-11-07 23:56:44" itemprop="dateCreated datePublished" datetime="2024-11-07T23:56:44+08:00">2024-11-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-11-20 21:01:29" itemprop="dateModified" datetime="2024-11-20T21:01:29+08:00">2024-11-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -323,24 +315,14 @@
     
     <div class="post-body" itemprop="articleBody">
           <p>不得不说，开发人员的安全水平真是参差不齐，接触的某厂的开发，一部分人真的是太菜了，这其中有毕业一两年的应届生，也有工作时长长短不一的外包。</p>
-<p>我在给开发提安全工单的时候，尽量做到完整详细地写清楚复现步骤，并解释清楚漏洞的原理，有的可能话也会附上利用漏洞利用相关信息。然而经常会碰到下面的现象：</p>
-<ol>
-<li>不看工单详情，上来就问怎么修复</li>
-<li>不懂也不知道 Google，上来就问某某类型的漏洞是什么意思</li>
-<li>完全没有复现过漏洞，修完了问我行不行，但凡自己复现一下都知道不行</li>
-<li>指哪修哪，不从根因解决问题，不知道举一反三不会 Variant Analysis</li>
-<li>修复不彻底，看似 OK，实际上还可以 Bypass</li>
-<li>……</li>
-</ol>
-<p>遇到积极主动的，我愿意给他答疑解惑，并提供额外的帮助。遇到不懂事的小兄弟，我只能完成我的义务工作，再给他点点方向，要我给他们当保姆就别多想了。</p>
-<p>当然，要是给大厂交漏洞拿 Bounty，对于这类不懂安全的开发，我感谢他们都来不及。但对于公司内部，一类问题反复提也没啥意思，不会给我带来多少成就感。</p>
-<p>我只希望某厂能在流程上做一些约束：</p>
-<ol>
-<li>开发修完漏洞，不要来问安全行不行，安全要是觉得不行，自然会给你重新提单</li>
-<li>写出漏洞得受惩罚，得有责任人，安全多提一单开发就多痛一次</li>
-</ol>
-<p>只有这样，开发才有动力去学习安全知识，才能提高代码质量，安全挖洞也才更有挑战。安全左移不能光靠工具和流程，人才是最重要的一环。</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/11/07/developers-with-poor-security-background/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -402,7 +384,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-10-25 00:08:10" itemprop="dateModified" datetime="2024-10-25T00:08:10+08:00">2024-10-25</time>
+      <time title="修改时间：2024-11-20 21:09:41" itemprop="dateModified" datetime="2024-11-20T21:09:41+08:00">2024-11-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -431,81 +413,14 @@
 <li>把 <code>~/.ssh/id_ed25519.pub</code> 的内容添加到 GitHub 的 SSH keys 中</li>
 <li>执行 <code>ssh-add</code> 命令</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">eval `ssh-agent -s`</span><br><span class="line">ssh-add ~/.ssh/id_ed25519</span><br></pre></td></tr></table></figure>
-
-<p>记住一定要执行第一条 <code>eval</code> 命令，否则执行 <code>ssh-add</code> 时会提示 <code>Could not open a connection to your authentication agent.</code>。</p>
-<p>接下来就可以克隆仓库并进行初始化设置了，步骤如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git clone git@github.com:secdroid/secdroid.github.io.git</span><br><span class="line">cd secdroid.github.io</span><br><span class="line">touch README.md</span><br><span class="line">git add README.md</span><br><span class="line">git commit -m &quot;first commit&quot;</span><br><span class="line">git branch -M master</span><br><span class="line">git push -u origin master</span><br></pre></td></tr></table></figure>
-
-<p>接下来进入仓库的 <code>Settings / Pages</code>，关联 <code>master</code> 分支到 <code>/root</code>，并保存设置。至此 <a href="https://secdroid.github.io/">https://secdroid.github.io</a> 就可以正常访问了，不过打开之后空空如也，一个完整的博客还需要设置一个简洁且美观的主题。</p>
-<p><img src="/images/setup-blog-with-github-pages.webp" alt="GitHub Pages 博客仓库设置"></p>
-<h2 id="0x02-安装-Hexo"><a href="#0x02-安装-Hexo" class="headerlink" title="0x02. 安装 Hexo"></a>0x02. 安装 Hexo</h2><p>输入以下命令完成安装操作（某些操作可能需要科学上网）。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install npm</span><br><span class="line">sudo npm install -g hexo-cli</span><br><span class="line">hexo init blog</span><br><span class="line">cd blog</span><br><span class="line">npm install</span><br></pre></td></tr></table></figure>
-
-<p>之后执行 <code>hexo s</code> 开启本地监听服务，可以本地访问 <code>http://localhost:4000/</code> 或者局域网访问查看效果。</p>
-<h2 id="0x03-安装-NexT"><a href="#0x03-安装-NexT" class="headerlink" title="0x03. 安装 NexT"></a>0x03. 安装 NexT</h2><p>NexT 是 Hexo 的一款主题，输入以下命令完成安装操作。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">确保位于 blog 文件夹下</span></span><br><span class="line">npm install hexo-theme-next</span><br></pre></td></tr></table></figure>
-
-<p>之后修改博客根目录下的 <code>_config.yml</code> 文件，把主题设置为 <code>theme: next</code>，然后执行如下命令重新生成博客页面。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-
-<p>打开 URL 发现加载有点慢，F12 查看请求列表，发现字体是从 Cloudflare 请求的，可以考虑替换成其他镜像站的字体。</p>
-<h2 id="0x04-博客配置"><a href="#0x04-博客配置" class="headerlink" title="0x04. 博客配置"></a>0x04. 博客配置</h2><h3 id="4-1-基本信息"><a href="#4-1-基本信息" class="headerlink" title="4.1 基本信息"></a>4.1 基本信息</h3><p>还是修改博客根目录下的 <code>_config.yml</code> 文件，几个可以修改的参数：</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Site</span></span><br><span class="line"><span class="attr">title:</span> <span class="string">SecDroid</span></span><br><span class="line"><span class="attr">subtitle:</span> <span class="string">&quot;A security researcher who&#x27;s looking for a job&quot;</span></span><br><span class="line"><span class="attr">description:</span> <span class="string">&quot;SecDroid&#x27;s Diary&quot;</span></span><br><span class="line"><span class="attr">keywords:</span></span><br><span class="line"><span class="attr">author:</span> <span class="string">Livermore</span></span><br><span class="line"><span class="attr">language:</span> <span class="string">zh-CN</span></span><br><span class="line"><span class="attr">timezone:</span> <span class="string">&#x27;Asia/Shanghai&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># URL</span></span><br><span class="line"><span class="comment">## Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;</span></span><br><span class="line"><span class="attr">url:</span> <span class="string">https://secdroid.github.io</span></span><br></pre></td></tr></table></figure>
-
-<p>注意 <code>url</code> 参数要使用 <code>https</code>，保持对搜索引擎的规范性和友好性。</p>
-<h3 id="4-2-Deploy"><a href="#4-2-Deploy" class="headerlink" title="4.2 Deploy"></a>4.2 Deploy</h3><p>先安装 <code>hexo-deployer-git</code> 插件，并修改 <code>_config.yml</code> 进行配置。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">npm install hexo-deployer-git</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">tail</span> _config.yml</span></span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: git@github.com:secdroid/secdroid.github.io.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
-
-<p>之后通过如下命令进行部署，之后就可以看到仓库的内容跟新了。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-
-<p><img src="/images/deploy-hexo-to-github-repo.webp" alt="部署 Hexo 到 GitHub Pages 博客仓库"></p>
-<h2 id="0x05-NexT-配置"><a href="#0x05-NexT-配置" class="headerlink" title="0x05. NexT 配置"></a>0x05. NexT 配置</h2><h3 id="5-1-配置文件"><a href="#5-1-配置文件" class="headerlink" title="5.1 配置文件"></a>5.1 配置文件</h3><p>官方建议通过如下方式创建和修改配置文件：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Installed through npm</span></span><br><span class="line">cp node_modules/hexo-theme-next/_config.yml _config.next.yml</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Installed through Git</span></span><br><span class="line">cp themes/next/_config.yml _config.next.yml</span><br></pre></td></tr></table></figure>
-
-<h3 id="5-2-主题风格"><a href="#5-2-主题风格" class="headerlink" title="5.2 主题风格"></a>5.2 主题风格</h3><p>主题风格默认是 <code>Muse</code>，界面不是很好看，最重要的是页面太窄，展示长代码行尤其不美观，可以切换到 <code>Pisces</code>。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> _config.next.yml | grep scheme</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">scheme: Muse</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">scheme: Mist</span></span><br><span class="line">scheme: Pisces</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">scheme: Gemini</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>为什么 NexT 主题设置 Pisces 风格不生效？</strong></p>
-<p>不知道是 Hexo 还是 NexT 主题的 Bug，从其他主题风格（比如默认的 <code>Muse</code>）改到 <code>Pisces</code>，重新执行 <code>hexo g</code> 之后，居然不生效。分析发现 CSS 文件 <code>/css/main.css</code> 还是原来的，重复执行 <code>hexo g</code> 也不解决问题。最后的解决方案是：先执行 <code>hexo clean</code> 清理 <code>public</code> 文件夹下的数据，然后执行 <code>hexo g</code> 重新生成静态页面。</p>
-<p>通过 <code>hexo d</code> 完成仓库部署后，由于 Chrome 浏览器的缓存原因，可能需要等一会才能看到效果。也可以 F12 调出控制台，切换到 <code>Network</code> 页面，选中 <code>Disable cache</code> 后刷新页面即可清除浏览器缓存重新发起请求（测试完毕后记得去除勾选）。</p>
-<h3 id="5-3-导航栏-页面"><a href="#5-3-导航栏-页面" class="headerlink" title="5.3 导航栏 &amp; 页面"></a>5.3 导航栏 &amp; 页面</h3><p>配置导航栏：</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">menu:</span></span><br><span class="line">  <span class="attr">home:</span> <span class="string">/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-home</span></span><br><span class="line">  <span class="attr">archives:</span> <span class="string">/archives/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-archive</span></span><br><span class="line">  <span class="attr">categories:</span> <span class="string">/categories/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-th</span></span><br><span class="line">  <span class="attr">tags:</span> <span class="string">/tags/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-tags</span></span><br><span class="line">  <span class="attr">about:</span> <span class="string">/about/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-user</span></span><br><span class="line">  <span class="attr">sitemap:</span> <span class="string">/sitemap.xml</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-sitemap</span></span><br><span class="line">  <span class="comment">#schedule: /schedule/ || fa fa-calendar</span></span><br><span class="line">  <span class="comment">#commonweal: /404/ || fa fa-heartbeat</span></span><br></pre></td></tr></table></figure>
-
-<p>上面的链接许多都不存在，还需要进行配置：</p>
-<ul>
-<li>文章分类页面</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">hexo new page categories</span></span><br><span class="line">INFO  Validating config</span><br><span class="line">INFO  Created: ~/github/blog/source/categories/index.md</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">vi ~/github/blog/source/categories/index.md</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> ~/github/blog/source/categories/index.md</span></span><br><span class="line">---</span><br><span class="line">title: categories</span><br><span class="line">date: 2024-10-23 15:57:26</span><br><span class="line">type: &quot;categories&quot;</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>文章标签页面</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">hexo new page tags</span></span><br><span class="line">INFO  Validating config</span><br><span class="line">INFO  Created: ~/github/blog/source/tags/index.md</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">vi ~/github/blog/source/tags/index.md</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> ~/github/blog/source/tags/index.md</span></span><br><span class="line">---</span><br><span class="line">title: tags</span><br><span class="line">date: 2024-10-23 15:59:59</span><br><span class="line">type: &quot;tags&quot;</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>文章模板</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> scaffolds/post.md</span></span><br><span class="line">---</span><br><span class="line">title: &#123;&#123; title &#125;&#125;</span><br><span class="line">date: &#123;&#123; date &#125;&#125;</span><br><span class="line">categories:</span><br><span class="line">- cat1</span><br><span class="line">- cat2</span><br><span class="line">tags:</span><br><span class="line">- tag1</span><br><span class="line">- tag2</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>关于页面</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">hexo new page about</span></span><br><span class="line">INFO  Validating config</span><br><span class="line">INFO  Created: ~/github/blog/source/about/index.md</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>Sitemap 页面</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">npm install hexo-generator-sitemap</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">tail</span> _config.yml</span></span><br><span class="line">sitemap:</span><br><span class="line">  path:</span><br><span class="line">    - sitemap.xml</span><br><span class="line">  tags: true</span><br><span class="line">  categories: true</span><br></pre></td></tr></table></figure>
-
-<h2 id="0x06-参考文档"><a href="#0x06-参考文档" class="headerlink" title="0x06. 参考文档"></a>0x06. 参考文档</h2><ol>
-<li><a target="_blank" rel="noopener" href="https://mini-pi.github.io/2024/02/28/how-to-make-blog-wedsite/">https://mini-pi.github.io/2024/02/28/how-to-make-blog-wedsite/</a></li>
-<li><a target="_blank" rel="noopener" href="https://theme-next.js.org/docs/getting-started/configuration.html">https://theme-next.js.org/docs/getting-started/configuration.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://linlif.github.io/2017/05/27/Hexo%E4%BD%BF%E7%94%A8%E6%94%BB%E7%95%A5-%E6%B7%BB%E5%8A%A0%E5%88%86%E7%B1%BB%E5%8F%8A%E6%A0%87%E7%AD%BE/">https://linlif.github.io/2017/05/27/Hexo使用攻略-添加分类及标签/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo-generator-sitemap">https://github.com/hexojs/hexo-generator-sitemap</a></li>
-</ol>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/10/24/setup-blog-with-github-pages-and-hexo-in-2025/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
