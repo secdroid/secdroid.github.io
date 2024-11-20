@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2024/11/20/command-path-security-in-go/</loc>
+    
+    <lastmod>2024-11-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/about/index.html</loc>
     
     <lastmod>2024-11-20</lastmod>
@@ -140,6 +149,13 @@
   
   <url>
     <loc>https://secdroid.github.io/categories/Vulnerability/Windows/</loc>
+    <lastmod>2024-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/categories/Vulnerability/Go/</loc>
     <lastmod>2024-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
