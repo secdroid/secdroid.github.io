@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2024/12/01/extract-video-from-bilibili-cache-with-ffmpeg/</loc>
+    
+    <lastmod>2024-12-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/2024/12/01/add-subtitles-for-video-with-ffmpeg/</loc>
     
     <lastmod>2024-12-01</lastmod>
@@ -165,6 +174,13 @@
   
   <url>
     <loc>https://secdroid.github.io/tags/%E5%AD%97%E5%B9%95/</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/tags/Bilibili/</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
