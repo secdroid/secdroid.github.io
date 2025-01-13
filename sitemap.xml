@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/</loc>
+    
+    <lastmod>2025-01-13</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/2025/01/11/burp-web-academy-access-control-vulnerabilities-part3/</loc>
     
     <lastmod>2025-01-11</lastmod>
@@ -184,7 +193,7 @@
 
   <url>
     <loc>https://secdroid.github.io/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -192,140 +201,147 @@
   
   <url>
     <loc>https://secdroid.github.io/tags/Hexo/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/NexT/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/GitHub/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/%E5%BC%80%E5%8F%91/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Windows/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Search-Path/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Privilege-Escalation/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/DoS/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/FFmpeg/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/%E5%AD%97%E5%B9%95/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Bilibili/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Burp/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Tools/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Command-Injection/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Path-Traversal/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Copilot/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Information-Disclosure/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/File-Upload/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Race-Condition/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/tags/Access-Control/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/tags/Authentication/</loc>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -334,56 +350,56 @@
   
   <url>
     <loc>https://secdroid.github.io/categories/Blog/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/categories/Development/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/categories/Vulnerability/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/categories/Vulnerability/Windows/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/categories/Vulnerability/Go/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/categories/Misc/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/categories/Vulnerability/Web/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/</loc>
-    <lastmod>2025-01-11</lastmod>
+    <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
