@@ -2,6 +2,24 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2025/01/11/burp-web-academy-access-control-vulnerabilities-part3/</loc>
+    
+    <lastmod>2025-01-13</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/01/07/burp-web-academy-access-control-vulnerabilities/</loc>
+    
+    <lastmod>2025-01-13</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/</loc>
     
     <lastmod>2025-01-13</lastmod>
@@ -11,25 +29,7 @@
   </url>
   
   <url>
-    <loc>https://secdroid.github.io/2025/01/11/burp-web-academy-access-control-vulnerabilities-part3/</loc>
-    
-    <lastmod>2025-01-11</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://secdroid.github.io/2025/01/08/burp-web-academy-access-control-vulnerabilities-part2/</loc>
-    
-    <lastmod>2025-01-11</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/01/07/burp-web-academy-access-control-vulnerabilities/</loc>
     
     <lastmod>2025-01-11</lastmod>
     
