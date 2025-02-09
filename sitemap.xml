@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2025/02/09/vulnerability-trends-of-2024/</loc>
+    
+    <lastmod>2025-02-09</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/links/index.html</loc>
     
     <lastmod>2025-02-09</lastmod>
@@ -380,6 +389,13 @@
     <priority>0.2</priority>
   </url>
   
+  <url>
+    <loc>https://secdroid.github.io/tags/%E6%BC%8F%E6%B4%9E%E8%B6%8B%E5%8A%BF/</loc>
+    <lastmod>2025-02-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
 
   
   <url>
@@ -433,6 +449,13 @@
   
   <url>
     <loc>https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/</loc>
+    <lastmod>2025-02-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/categories/Vulnerability/Trends/</loc>
     <lastmod>2025-02-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
