@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://secdroid.github.io/2025/03/05/burp-web-academy-sql-injection/</loc>
+    <loc>https://secdroid.github.io/2025/03/02/burp-web-academy-web-llm-attacks/</loc>
     
     <lastmod>2025-03-05</lastmod>
     
@@ -11,9 +11,81 @@
   </url>
   
   <url>
-    <loc>https://secdroid.github.io/2025/03/02/burp-web-academy-web-llm-attacks/</loc>
+    <loc>https://secdroid.github.io/2025/02/18/burp-web-academy-ssrf-server-side-request-forgery/</loc>
     
-    <lastmod>2025-03-02</lastmod>
+    <lastmod>2025-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/02/15/burp-web-academy-websockets/</loc>
+    
+    <lastmod>2025-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/01/21/burp-web-academy-http-request-smuggling/</loc>
+    
+    <lastmod>2025-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/01/18/burp-web-academy-authentication-part2/</loc>
+    
+    <lastmod>2025-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/</loc>
+    
+    <lastmod>2025-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/01/06/burp-web-academy-file-upload-vulnerabilities/</loc>
+    
+    <lastmod>2025-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/01/05/burp-suite-turbo-intruder-protocol-error/</loc>
+    
+    <lastmod>2025-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/</loc>
+    
+    <lastmod>2025-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/03/05/burp-web-academy-sql-injection/</loc>
+    
+    <lastmod>2025-03-05</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -32,15 +104,6 @@
     <loc>https://secdroid.github.io/2025/02/23/burp-web-academy-xss-cross-site-scripting/</loc>
     
     <lastmod>2025-02-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/02/18/burp-web-academy-ssrf-server-side-request-forgery/</loc>
-    
-    <lastmod>2025-02-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -74,15 +137,6 @@
   </url>
   
   <url>
-    <loc>https://secdroid.github.io/2025/02/15/burp-web-academy-websockets/</loc>
-    
-    <lastmod>2025-02-15</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://secdroid.github.io/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/</loc>
     
     <lastmod>2025-02-12</lastmod>
@@ -110,25 +164,7 @@
   </url>
   
   <url>
-    <loc>https://secdroid.github.io/2025/01/21/burp-web-academy-http-request-smuggling/</loc>
-    
-    <lastmod>2025-01-21</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://secdroid.github.io/2025/01/08/burp-web-academy-access-control-vulnerabilities-part2/</loc>
-    
-    <lastmod>2025-01-19</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/</loc>
     
     <lastmod>2025-01-19</lastmod>
     
@@ -158,42 +194,6 @@
     <loc>https://secdroid.github.io/2025/01/04/burp-web-academy-information-disclosure/</loc>
     
     <lastmod>2025-01-19</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/01/06/burp-web-academy-file-upload-vulnerabilities/</loc>
-    
-    <lastmod>2025-01-19</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/01/18/burp-web-academy-authentication-part2/</loc>
-    
-    <lastmod>2025-01-18</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/01/05/burp-suite-turbo-intruder-protocol-error/</loc>
-    
-    <lastmod>2025-01-05</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/</loc>
-    
-    <lastmod>2025-01-03</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -533,6 +533,41 @@
   
   <url>
     <loc>https://secdroid.github.io/tags/SQL-Injection/</loc>
+    <lastmod>2025-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/tags/Turbo-Intruder/</loc>
+    <lastmod>2025-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/tags/Burp-Intruder/</loc>
+    <lastmod>2025-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/tags/Burp-Sessions/</loc>
+    <lastmod>2025-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/tags/Burp-Collaborator/</loc>
+    <lastmod>2025-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/tags/Blind-Injection/</loc>
     <lastmod>2025-03-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
