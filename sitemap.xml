@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2025/03/05/burp-web-academy-sql-injection/</loc>
+    
+    <lastmod>2025-03-08</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/2025/03/08/burp-web-academy-sql-injection-part2/</loc>
     
     <lastmod>2025-03-08</lastmod>
@@ -84,15 +93,6 @@
   
   <url>
     <loc>https://secdroid.github.io/2025/01/02/burp-web-academy-os-command-injection/</loc>
-    
-    <lastmod>2025-03-05</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/03/05/burp-web-academy-sql-injection/</loc>
     
     <lastmod>2025-03-05</lastmod>
     
