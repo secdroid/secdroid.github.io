@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2024/10/24/setup-blog-with-github-pages-and-hexo-in-2025/</loc>
+    
+    <lastmod>2025-04-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/2025/03/23/burp-web-academy-api-testing/</loc>
     
     <lastmod>2025-03-23</lastmod>
@@ -185,15 +194,6 @@
     <loc>https://secdroid.github.io/2025/02/09/vulnerability-trends-of-2024/</loc>
     
     <lastmod>2025-02-09</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2024/10/24/setup-blog-with-github-pages-and-hexo-in-2025/</loc>
-    
-    <lastmod>2025-01-21</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
