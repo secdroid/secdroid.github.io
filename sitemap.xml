@@ -2,6 +2,24 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2025/05/28/burp-web-academy-csrf-cross-site-request-forgery-part2/</loc>
+    
+    <lastmod>2025-06-03</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/</loc>
+    
+    <lastmod>2025-06-03</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/2025/06/03/burp-web-academy-csrf-cross-site-request-forgery-part3/</loc>
     
     <lastmod>2025-06-03</lastmod>
@@ -12,24 +30,6 @@
   
   <url>
     <loc>https://secdroid.github.io/2025/02/15/burp-web-academy-websockets/</loc>
-    
-    <lastmod>2025-05-28</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/02/12/burp-web-academy-csrf-cross-site-request-forgery/</loc>
-    
-    <lastmod>2025-05-28</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2025/05/28/burp-web-academy-csrf-cross-site-request-forgery-part2/</loc>
     
     <lastmod>2025-05-28</lastmod>
     
