@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2025/06/08/fuzzing-mp4-library/</loc>
+    
+    <lastmod>2025-06-08</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/2025/06/08/cloud-computing-concepts-part1/</loc>
     
     <lastmod>2025-06-08</lastmod>
@@ -805,6 +814,13 @@
     <priority>0.2</priority>
   </url>
   
+  <url>
+    <loc>https://secdroid.github.io/tags/MP4/</loc>
+    <lastmod>2025-06-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
 
   
   <url>
@@ -900,6 +916,13 @@
   
   <url>
     <loc>https://secdroid.github.io/categories/Cloud-Security/</loc>
+    <lastmod>2025-06-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://secdroid.github.io/categories/Vulnerability/Fuzzing/</loc>
     <lastmod>2025-06-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
