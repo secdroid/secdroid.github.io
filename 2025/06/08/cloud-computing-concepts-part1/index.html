@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"secdroid.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0x01. 前言对云计算相关基础概念进行介绍，内容整理自互联网公开资料或 LLM 生成内容。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="云计算相关概念">
+<meta property="og:url" content="https://secdroid.github.io/2025/06/08/cloud-computing-concepts-part1/index.html">
+<meta property="og:site_name" content="SecDroid">
+<meta property="og:description" content="0x01. 前言对云计算相关基础概念进行介绍，内容整理自互联网公开资料或 LLM 生成内容。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://secdroid.github.io/images/virtual-machines-vs-containers.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/kata-containers-traditional-containers.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/docker-components.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/container-image.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/selinux-mac-architecture.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/cloud-security-model.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/appmesh-proxy.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/service-mesh-evolution.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/sidecar-motorcycle.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/devops-loop.webp">
+<meta property="og:image" content="https://secdroid.github.io/images/devsecops-toolchain.webp">
+<meta property="article:published_time" content="2025-06-08T03:31:57.971Z">
+<meta property="article:modified_time" content="2025-06-08T03:31:34.000Z">
+<meta property="article:author" content="Livermore">
+<meta property="article:tag" content="Container">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="Cloud">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://secdroid.github.io/images/virtual-machines-vs-containers.webp">
+
+
+<link rel="canonical" href="https://secdroid.github.io/2025/06/08/cloud-computing-concepts-part1/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://secdroid.github.io/2025/06/08/cloud-computing-concepts-part1/","path":"2025/06/08/cloud-computing-concepts-part1/","title":"云计算相关概念"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>云计算相关概念 | SecDroid</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SecDroid</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A security researcher who's looking for a job</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>链接</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">0x01. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-%E4%BA%91%E8%AE%A1%E7%AE%97%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">0x02. 云计算概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%BE%AE%E6%9C%8D%E5%8A%A1"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 微服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E8%99%9A%E6%8B%9F%E6%9C%BA-%E5%AE%B9%E5%99%A8"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 虚拟机 &amp; 容器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%AE%89%E5%85%A8%E5%AE%B9%E5%99%A8"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 安全容器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Docker"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-RESTful-API"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 RESTful API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C%E6%97%B6"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 容器运行时</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-%E5%AE%B9%E5%99%A8%E9%95%9C%E5%83%8F"><span class="nav-number">2.7.</span> <span class="nav-text">2.7 容器镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-%E5%AE%B9%E5%99%A8%E9%95%9C%E5%83%8F%E6%89%AB%E6%8F%8F"><span class="nav-number">2.8.</span> <span class="nav-text">2.8 容器镜像扫描</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-Namespaces"><span class="nav-number">2.9.</span> <span class="nav-text">2.9 Namespaces</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-10-Control-Groups-Cgroups"><span class="nav-number">2.10.</span> <span class="nav-text">2.10 Control Groups (Cgroups)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-11-Capabilities"><span class="nav-number">2.11.</span> <span class="nav-text">2.11 Capabilities</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-12-SELinux"><span class="nav-number">2.12.</span> <span class="nav-text">2.12 SELinux</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-13-AppArmor"><span class="nav-number">2.13.</span> <span class="nav-text">2.13 AppArmor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-14-seccomp"><span class="nav-number">2.14.</span> <span class="nav-text">2.14 seccomp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-15-%E4%BA%91%E5%AE%89%E5%85%A8%E8%B4%A3%E4%BB%BB%E5%85%B1%E6%8B%85%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.15.</span> <span class="nav-text">2.15 云安全责任共担模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-16-%E4%BA%91%E5%8E%9F%E7%94%9F"><span class="nav-number">2.16.</span> <span class="nav-text">2.16 云原生</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-17-CNCF"><span class="nav-number">2.17.</span> <span class="nav-text">2.17 CNCF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-18-Service-Mesh"><span class="nav-number">2.18.</span> <span class="nav-text">2.18 Service Mesh</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-19-%E5%A3%B0%E6%98%8E%E5%BC%8F-API"><span class="nav-number">2.19.</span> <span class="nav-text">2.19 声明式 API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-20-%E5%B7%A5%E4%BD%9C%E8%B4%9F%E8%BD%BD"><span class="nav-number">2.20.</span> <span class="nav-text">2.20 工作负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-21-DevOps-DevSecOps"><span class="nav-number">2.21.</span> <span class="nav-text">2.21 DevOps &amp; DevSecOps</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-22-%E5%85%AC%E6%9C%89%E4%BA%91-%E7%A7%81%E6%9C%89%E4%BA%91-%E6%B7%B7%E5%90%88%E4%BA%91"><span class="nav-number">2.22.</span> <span class="nav-text">2.22 公有云 &#x2F; 私有云 &#x2F; 混合云</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-References"><span class="nav-number">3.</span> <span class="nav-text">0x03. References</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Livermore</p>
+  <div class="site-description" itemprop="description">SecDroid's Diary</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://secdroid.github.io/2025/06/08/cloud-computing-concepts-part1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Livermore">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SecDroid">
+      <meta itemprop="description" content="SecDroid's Diary">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="云计算相关概念 | SecDroid">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          云计算相关概念
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-06-08 11:31:57 / 修改时间：11:31:34" itemprop="dateCreated datePublished" datetime="2025-06-08T11:31:57+08:00">2025-06-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Cloud-Security/" itemprop="url" rel="index"><span itemprop="name">Cloud Security</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01. 前言"></a>0x01. 前言</h2><p>对云计算相关基础概念进行介绍，内容整理自互联网公开资料或 LLM 生成内容。</p>
+<span id="more"></span>
+
+<h2 id="0x02-云计算概念"><a href="#0x02-云计算概念" class="headerlink" title="0x02. 云计算概念"></a>0x02. 云计算概念</h2><h3 id="2-1-微服务"><a href="#2-1-微服务" class="headerlink" title="2.1 微服务"></a>2.1 微服务</h3><p>与微服务（Micro services）相对应的概念是单体软件（Monolithic software）。单体架构的所有组件紧密耦合，存在更新缓慢、扩展困难、维护困难等诸多问题。</p>
+<blockquote>
+<p><strong>微服务就是采用容器技术的面向服务的架构</strong>。它依然使用“服务”作为功能单元，但是变成了轻量级实现，不需要新增服务器，只需要新建容器（一个进程），所以才叫做“微服务”。</p>
+<p><strong>一个微服务就是一个独立的进程。</strong> 这个进程可以运行在本机，也可以运行在别的服务器，或者在云端（比如云服务和云函数 FaaS）。</p>
+<p>它的特点与面向服务架构是一样的，但因为更轻量级，所以功能的解耦和服务化可以做得更彻底。而且，它可以标准化，同样的容器不管在哪里运行，结果都是一样的，所以市场上有很多 SaaS 产品，提供标准化的微服务。</p>
+<p>正是由于微服务这些突出的优点，这几年才会变得如此流行。它和容器技术、云服务一起，一定会在未来的软件开发中，扮演越来越重要的角色。</p>
+</blockquote>
+<p>微服务是伴随着容器技术兴起的，服务之间通过 API 进行通信，容器和 API 是微服务的基石。</p>
+<h3 id="2-2-虚拟机-容器"><a href="#2-2-虚拟机-容器" class="headerlink" title="2.2 虚拟机 &amp; 容器"></a>2.2 虚拟机 &amp; 容器</h3><p>Hypervisor 分为 Type 1 和 Type 2 两种，前者也称之为裸金属虚拟机（Bare Metal Hypervisor）。</p>
+<p><img src="/images/virtual-machines-vs-containers.webp" alt="虚拟机 vs 容器"></p>
+<h3 id="2-3-安全容器"><a href="#2-3-安全容器" class="headerlink" title="2.3 安全容器"></a>2.3 安全容器</h3><p>常见的安全容器有 Kata 和 gVisor，其中 Kata 和传统容器的区别如下图所示：</p>
+<p><img src="/images/kata-containers-traditional-containers.webp" alt="Kata 容器 vs 传统容器"></p>
+<h3 id="2-4-Docker"><a href="#2-4-Docker" class="headerlink" title="2.4 Docker"></a>2.4 Docker</h3><p>Docker 的核心组件包括三个部分：Client、Daemon、Registry，其中 Client 和 Daemon 进程之间基于 REST API 进行通信。</p>
+<p><img src="/images/docker-components.webp" alt="Docker 核心组件"></p>
+<h3 id="2-5-RESTful-API"><a href="#2-5-RESTful-API" class="headerlink" title="2.5 RESTful API"></a>2.5 RESTful API</h3><p>RESTful API 是当前非常常见的一种数据交换方式，通常以 JSON 来传递数据。</p>
+<p>关于 RESTful API 的设计，可以参考文章：<a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2018/10/restful-api-best-practices.html">RESTful API 最佳实践 - 阮一峰的网络日志</a>。</p>
+<h3 id="2-6-容器运行时"><a href="#2-6-容器运行时" class="headerlink" title="2.6 容器运行时"></a>2.6 容器运行时</h3><p>容器运行时（Container Runtime）是负责<strong>创建、运行和管理容器</strong>的软件组件。它是容器化技术的核心，确保容器能够在宿主系统上正确执行。</p>
+<p><strong>容器运行时的主要功能</strong></p>
+<ol>
+<li><strong>拉取镜像</strong>：从容器镜像仓库（如 Docker Hub）下载容器镜像。</li>
+<li><strong>创建容器</strong>：根据镜像启动容器，并分配必要的资源。</li>
+<li><strong>管理生命周期</strong>：支持容器的启动、暂停、停止和删除。</li>
+<li><strong>资源隔离</strong>：利用 Linux 内核的 <code>cgroups</code> 和 <code>namespaces</code> 进行 CPU、内存和网络隔离。</li>
+<li><strong>安全控制</strong>：提供访问控制、权限管理和安全策略，如 <code>seccomp</code> 和 <code>AppArmor</code>。</li>
+</ol>
+<p><strong>常见的容器运行时</strong></p>
+<ul>
+<li><strong>Containerd</strong>：Docker 的核心组件，专注于稳定性和性能优化。</li>
+<li><strong>CRI-O</strong>：专为 Kubernetes 设计的轻量级运行时，符合 CRI（Container Runtime Interface）。</li>
+<li><strong>runc</strong>：底层运行时，负责执行 OCI（Open Container Initiative）标准的容器。</li>
+<li><strong>LXC</strong>：较早的容器技术，提供完整的 Linux 运行环境。</li>
+</ul>
+<h3 id="2-7-容器镜像"><a href="#2-7-容器镜像" class="headerlink" title="2.7 容器镜像"></a>2.7 容器镜像</h3><p>容器镜像是不可变的（immutable）。容器镜像是分层的，可以基于其他容器镜像构建新的容器镜像。</p>
+<p><img src="/images/container-image.webp" alt="容器镜像"></p>
+<p>可以看出，Docker 容器镜像自下而上的分层结构为：</p>
+<ul>
+<li><code>bootfs</code>，即 Linux Kernel</li>
+<li>Dockerfile 的每一条命令都对应一层<ul>
+<li><code>FROM</code> 对应 Base Image</li>
+<li><code>WORKDIR</code></li>
+<li><code>COPY</code></li>
+<li><code>RUN</code></li>
+<li><code>CMD</code></li>
+</ul>
+</li>
+<li>最上层的容器层是可写的（<code>R/W</code>），对容器的修改保存在这里，当容器被删除时该层数据也会丢失</li>
+</ul>
+<h3 id="2-8-容器镜像扫描"><a href="#2-8-容器镜像扫描" class="headerlink" title="2.8 容器镜像扫描"></a>2.8 容器镜像扫描</h3><p>我们需要使用特定的工具对容器镜像进行定期扫描，以发现其中可能存在的漏洞并及时修复。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/aquasecurity/trivy">Trivy</a> 就是这么一款工具，其支持扫描如下问题：</p>
+<ul>
+<li>OS packages and software dependencies in use (SBOM)</li>
+<li>Known vulnerabilities (CVEs)</li>
+<li>IaC issues and misconfigurations</li>
+<li>Sensitive information and secrets</li>
+<li>Software licenses</li>
+</ul>
+<p>所谓 IaC，即 Infrastructure as Code，<strong>基础设施即代码</strong>。通俗理解：传统的基础设施配置都是认为操作的，现在我们可以使用代码来配置，比如使用 YAML 定义的 K8s 配置文件，不需要人工参与进来，可以实现<strong>自动化、版本控制、一致性、安全检查</strong>等相关目标。IaC 配置文件可能也存在安全问题，这正是 Trivy 扫描需要关注的问题。</p>
+<p>所谓 SBOM，即<strong>软件物料清单</strong>。通过 SBOM，我们可以知道项目具体使用了哪些软件、组件，以及对应的版本信息等，SBOM 是开源管理、漏洞管理、合规管理、许可管理、供应链安全管理等相关活动的基础输入数据。</p>
+<p>与 SBOM 紧密相关的概念是 SCA（Software Composition Analysis），即软件成分分析，两者的区别是：</p>
+<ul>
+<li><strong>SBOM is the foundation; SCA is the action.</strong><ul>
+<li>SBOM lists all components, but SCA <strong>evaluates their security and compliance risks</strong>.</li>
+</ul>
+</li>
+<li><strong>SBOM is static; SCA is dynamic.</strong><ul>
+<li>SBOM is like an inventory, while SCA <strong>continuously scans and alerts</strong> on new vulnerabilities.</li>
+</ul>
+</li>
+<li><strong>They complement each other.</strong><ul>
+<li>Having an SBOM improves visibility, but using SCA ensures vulnerabilities don’t go unnoticed.</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-9-Namespaces"><a href="#2-9-Namespaces" class="headerlink" title="2.9 Namespaces"></a>2.9 Namespaces</h3><p>关于 Namespace 可以阅读如下文章：<a target="_blank" rel="noopener" href="https://coolshell.cn/articles/17010.html">Docker基础技术：Linux Namespace（上）</a>、<a target="_blank" rel="noopener" href="https://coolshell.cn/articles/17029.html">Docker基础技术：Linux Namespace（下）</a>。</p>
+<p>Namespace 用于空间隔离，支持的类型如下：(这里 UTS 是 <code>Unix Time-Sharing</code>，字面上不是很直观，可以看成是一个<strong>过气</strong>名词）</p>
+<table>
+<thead>
+<tr>
+<th align="left">分类</th>
+<th align="left">系统调用参数</th>
+<th>隔离说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Mount namespaces</strong></td>
+<td align="left">CLONE_NEWNS</td>
+<td>文件系统挂载点</td>
+</tr>
+<tr>
+<td align="left"><strong>UTS namespaces</strong></td>
+<td align="left">CLONE_NEWUTS</td>
+<td>主机名、域名</td>
+</tr>
+<tr>
+<td align="left"><strong>IPC namespaces</strong></td>
+<td align="left">CLONE_NEWIPC</td>
+<td>进程间通信</td>
+</tr>
+<tr>
+<td align="left"><strong>PID namespaces</strong></td>
+<td align="left">CLONE_NEWPID</td>
+<td>进程 ID</td>
+</tr>
+<tr>
+<td align="left"><strong>Network namespaces</strong></td>
+<td align="left">CLONE_NEWNET</td>
+<td>网络</td>
+</tr>
+<tr>
+<td align="left"><strong>User namespaces</strong></td>
+<td align="left">CLONE_NEWUSER</td>
+<td>用户、用户组</td>
+</tr>
+</tbody></table>
+<p>主要是三个系统调用</p>
+<ul>
+<li><code>clone</code> – 实现线程的系统调用，用来创建一个新的进程，并可以通过设计上述参数达到隔离。</li>
+<li><code>unshare</code> – 使某进程脱离某个namespace</li>
+<li><code>setns</code> – 把某进程加入到某个namespace</li>
+</ul>
+<h3 id="2-10-Control-Groups-Cgroups"><a href="#2-10-Control-Groups-Cgroups" class="headerlink" title="2.10 Control Groups (Cgroups)"></a>2.10 Control Groups (Cgroups)</h3><p>Cgroups 可以用来限制进程组的的 CPU、内存、磁盘 I&#x2F;O 等资源，关于 Cgroups 可以阅读如下文章：<a target="_blank" rel="noopener" href="https://coolshell.cn/articles/17049.html">Docker基础技术：Linux CGroup</a>。</p>
+<h3 id="2-11-Capabilities"><a href="#2-11-Capabilities" class="headerlink" title="2.11 Capabilities"></a>2.11 Capabilities</h3><blockquote>
+<p>Capabilities 机制是在 Linux 2.2 之后引入的，用于将之前与超级用户 <code>root(UID=0)</code> 关联的特权细分为不同的功能组，Capabilites 作为线程的属性存在，每个功能组都可以独立启用和禁用。其本质上就是将内核调用分门别类，具有相似功能的内核调用被分到同一组中。</p>
+<p>这样一来，权限检查的过程就变成了：在执行特权操作时，如果线程的有效身份不是 <code>root</code>，就去检查其是否具有该特权操作所对应的 capabilities，并以此为依据，决定是否可以执行特权操作。</p>
+<p>Capabilities 可以在进程执行时赋予，也可以直接从父进程继承。</p>
+</blockquote>
+<p>不当的 Capabilities 配置可能导致容器逃逸，比如 <code>CAP_SYS_ADMIN</code>，可以参考 <a target="_blank" rel="noopener" href="https://www.freebuf.com/vuls/264843.html">Docker SYS_ADMIN 容器逃逸原理解析</a>。</p>
+<p>查看 Capabilities 的工具：</p>
+<ul>
+<li>查看进程 <code>cat /proc/&lt;pid&gt;/status</code></li>
+<li>查看进程 <code>getpcaps &lt;pid&gt;</code></li>
+<li>查看文件 <code>getcap &lt;path&gt;</code></li>
+</ul>
+<h3 id="2-12-SELinux"><a href="#2-12-SELinux" class="headerlink" title="2.12 SELinux"></a>2.12 SELinux</h3><p>常见的访问控制可以分为两类：</p>
+<ul>
+<li>Discretionary access control (DAC)，自主访问控制<ul>
+<li>Owner 决定谁可以访问资源，是最常见的访问控制模式</li>
+</ul>
+</li>
+<li>Mandatory access control (MAC)，强制访问控制<ul>
+<li>是一种严格的访问控制模型，主要用于高安全性环境，如政府、军队和金融机构</li>
+<li>MAC 由<strong>操作系统或安全策略</strong>强制执行，用户无法随意修改权限</li>
+</ul>
+</li>
+</ul>
+<p>Linux 下采用 MAC 机制最主要的案例有：SELinux 和 AppArmor。</p>
+<blockquote>
+<p>The SELinux architecture can be split into four main components.</p>
+<ol>
+<li>Firstly, a <strong>Subject</strong> must request access to take an action. In most cases, the subject is a process that is requesting access to a resource. Access can be controlled via Access Vector Rules, whose details will be presented shortly.</li>
+<li>Second, an <strong>Object Manager (OM)</strong> that controls the access of the subject. It will query the Security Server in order to allow or deny actions.</li>
+<li><strong>Security Server</strong>—the security server makes decisions based on the Security Policy and returns an answer.</li>
+<li>**Access Vector Cache (AVC)**—this is a cache that stores the decisions of the security server in order to speed up performance.</li>
+</ol>
+</blockquote>
+<p><img src="/images/selinux-mac-architecture.webp" alt="SELinux MAC 架构"></p>
+<h3 id="2-13-AppArmor"><a href="#2-13-AppArmor" class="headerlink" title="2.13 AppArmor"></a>2.13 AppArmor</h3><p><strong>AppArmor</strong> 和 <strong>SELinux</strong> 都是 Linux 内核中的 <strong>强制访问控制（MAC）</strong> 安全模块，但它们在设计理念和实现方式上有所不同。</p>
+<p><strong>AppArmor</strong></p>
+<ul>
+<li><strong>基于路径（Path-based）</strong>：AppArmor 使用文件路径来定义访问控制策略，而不是文件的元数据。</li>
+<li><strong>易于配置</strong>：相比 SELinux，AppArmor 的规则更简单，适合普通用户管理。</li>
+<li><strong>灵活性</strong>：支持“学习模式”（Complain Mode），可以记录违规行为而不阻止执行，方便调试。</li>
+</ul>
+<p><strong>SELinux</strong></p>
+<ul>
+<li><strong>基于标签（Label-based）</strong>：SELinux 使用安全上下文（Security Context）来标记文件和进程，并通过策略强制执行访问控制。</li>
+<li><strong>更严格的安全性</strong>：SELinux 提供更细粒度的安全控制，适用于高安全性环境（如政府、金融机构）。</li>
+<li><strong>复杂性较高</strong>：SELinux 需要额外的配置和学习成本，通常由专业管理员维护。</li>
+</ul>
+<h3 id="2-14-seccomp"><a href="#2-14-seccomp" class="headerlink" title="2.14 seccomp"></a>2.14 seccomp</h3><p><strong>Seccomp</strong>（Secure Computing Mode）是 <strong>Linux 内核</strong> 提供的一种安全机制，用于<strong>限制进程可用的系统调用</strong>，从而减少攻击面，提高系统安全性。它最初在 <strong>Linux 2.6.12</strong> 版本中引入，主要用于<strong>沙盒化（Sandboxing）</strong>，防止恶意代码执行未经授权的系统调用。</p>
+<p>Seccomp 通过 <strong>过滤系统调用</strong> 来限制进程的行为，主要有两种模式：</p>
+<ol>
+<li><strong>严格模式（Strict Mode）</strong>：<ul>
+<li>仅允许进程使用 <strong>read、write、exit、sigreturn</strong> 这四个系统调用。</li>
+<li>任何其他系统调用都会导致进程被终止（<code>SIGKILL</code>）。</li>
+<li>适用于极端受限的环境，如高安全性应用。</li>
+</ul>
+</li>
+<li><strong>过滤模式（Filter Mode，Seccomp-BPF）</strong>：<ul>
+<li>允许开发者定义<strong>自定义规则</strong>，决定哪些系统调用可以执行，哪些需要被拦截。</li>
+<li>通过 <strong>Berkeley Packet Filter（BPF）</strong> 进行系统调用过滤。</li>
+<li>适用于现代应用，如 <strong>Docker、Chromium、systemd</strong> 等。</li>
+</ul>
+</li>
+</ol>
+<p><strong>Seccomp 的应用场景</strong></p>
+<ul>
+<li><strong>容器安全</strong>：Docker 和 Kubernetes 使用 Seccomp 限制容器内的系统调用，防止恶意代码影响宿主机。</li>
+<li><strong>浏览器沙盒</strong>：Chromium 和 Firefox 使用 Seccomp 限制网页进程的系统调用，提高浏览器安全性。</li>
+<li><strong>系统服务保护</strong>：<code>systemd</code> 使用 Seccomp 限制服务进程的权限，减少攻击面。</li>
+</ul>
+<h3 id="2-15-云安全责任共担模型"><a href="#2-15-云安全责任共担模型" class="headerlink" title="2.15 云安全责任共担模型"></a>2.15 云安全责任共担模型</h3><p>与传统数据中心相比，云服务商与云服务客户对云及云上资产的可见性不同， 云安全工作无法仅由某一方承担完成，<strong>云安全责任共担模式</strong>成为行业共识。</p>
+<p><img src="/images/cloud-security-model.webp" alt="云安全责任共担模型"></p>
+<p>相关责任主体：</p>
+<ul>
+<li>云服务客户</li>
+<li>云服务商</li>
+<li>云安全厂商<ul>
+<li>云服务商，在为云服务客户提供云服务的同时提供原生化的云安全服务</li>
+<li>传统安全厂商，将已有安全工具云化改造或面向云场景开发新的云安全服务</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-16-云原生"><a href="#2-16-云原生" class="headerlink" title="2.16 云原生"></a>2.16 云原生</h3><p>“云原生”（Cloud Native）是一个专门用于描述软件架构和开发模式的概念，而“云计算”（Cloud Computing）则是一种更广泛的计算资源交付方式。两者关系密切，但关注点不同。</p>
+<p><strong>云计算</strong></p>
+<p>云计算是通过互联网提供计算资源（如服务器、存储、数据库、网络等）的方式，通常可以分为：</p>
+<ul>
+<li><strong>IaaS（基础设施即服务）</strong>：提供虚拟机、存储、网络等基础设施（如 AWS EC2、Google Compute Engine）。</li>
+<li><strong>PaaS（平台即服务）</strong>：提供完整的开发、运行环境，让开发者无需管理底层基础设施（如 AWS Elastic Beanstalk、Google App Engine）。</li>
+<li><strong>SaaS（软件即服务）</strong>：直接提供可使用的软件应用（如 Google Docs、Dropbox）。</li>
+</ul>
+<p><strong>云原生</strong></p>
+<p>云原生强调的是如何在云计算环境中<strong>构建和运行应用</strong>，它包含了一些关键特性：</p>
+<ul>
+<li><strong>容器化（Containerization）</strong>：通过容器（如 Docker、containerd）确保应用一致性，并提高可移植性。</li>
+<li><strong>微服务架构（Microservices）</strong>：将应用拆分为多个独立可部署的服务，方便扩展和维护。</li>
+<li><strong>动态管理（Dynamic Orchestration）</strong>：使用 Kubernetes 或其他编排工具自动管理容器化应用的生命周期。</li>
+<li><strong>声明式基础设施（Declarative Infrastructure）</strong>：使用 YAML、Terraform 等工具以代码方式管理云资源。</li>
+</ul>
+<p><strong>核心区别</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>类别</strong></th>
+<th><strong>云计算</strong></th>
+<th><strong>云原生</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>本质</strong></td>
+<td>计算资源交付方式</td>
+<td>应用开发和运行方式</td>
+</tr>
+<tr>
+<td><strong>范围</strong></td>
+<td>包括 IaaS、PaaS、SaaS</td>
+<td>主要涉及应用架构设计</td>
+</tr>
+<tr>
+<td><strong>技术栈</strong></td>
+<td>虚拟机、存储、网络等</td>
+<td>容器、微服务、Kubernetes</td>
+</tr>
+<tr>
+<td><strong>目标</strong></td>
+<td>提供弹性计算资源</td>
+<td>让应用具备云环境最佳实践</td>
+</tr>
+</tbody></table>
+<p>云原生架构基于以下五个核心要素：</p>
+<p><strong>微服务</strong>：几乎所有云架构都基于<strong>微服务</strong>，微服务的关键优势在于可组合性，即将应用分解为一组更小的轻量级服务，而这些服务可通过<strong>应用编程接口 (API)</strong> 轻松组合并相互连接。例如，一个电子商务应用可能由购物车专用服务、付款服务以及用于与库存管理后端通信的服务组合而成。可组合性还使团队能够切换和重组组件，以满足新的业务要求，而不会中断应用的其他部分。</p>
+<p><strong>容器和编排</strong>：<strong>容器</strong>是轻量级的可执行组件，包含在任何环境中运行代码所需的所有元素（包括应用源代码和依赖项）。容器提供工作负载可移植性，支持“一次构建、随处运行”的代码，使开发和部署过程大大简化。由于它们可以独立部署，因此还有助于避免各种语言、库和框架之间的磨合。这种可移植性和灵活性使得容器成为构建微服务架构的理想选择。  </p>
+<p>此外，随着微服务数量的增加，容器编排也非常重要，可以帮助管理容器，使它们能够作为应用平稳运行。诸如 <strong>Kubernetes</strong> 之类的容器编排平台可以对容器的运行位置和运行方式进行监督和控制、修复任何故障，以及在各容器之间实现负载均衡。</p>
+<p><strong>DevOps</strong>：云原生应用的开发需要改为采用像 <strong>DevOps</strong> 这样的敏捷交付方法，这样，开发者和 IT 运维团队就可以密切协作，自动执行基础设施和软件交付流程。DevOps 使开发和运营团队可以更密切地沟通和协作，实现共同的目标，从而打造出可以更快地构建、测试和发布应用的文化和环境。</p>
+<p>**持续集成和持续交付 (CI&#x2F;CD)**：通过该自动化流程，可以更快地修复、扩缩和部署系统。通过 CI&#x2F;CD 流水线，可以自动构建、测试和部署应用更改，而无需安排停机时间或等待维护窗口。持续交付可确保软件发布更可靠、风险更低，从而使得团队可以更快速、更频繁地提供新的服务和功能。</p>
+<h3 id="2-17-CNCF"><a href="#2-17-CNCF" class="headerlink" title="2.17 CNCF"></a>2.17 CNCF</h3><p>CNCF（Cloud Native Computing Foundation，云原生计算基金会）是一个<strong>开源、供应商中立</strong>的组织，致力于推动云原生技术的发展。它是<strong>Linux Foundation</strong>的子基金会，成立于<strong>2015年</strong>，最初由<strong>Google捐赠 Kubernetes</strong>作为种子项目。</p>
+<p>CNCF 的目标：</p>
+<blockquote>
+<p>The Foundation’s mission is to make cloud native computing ubiquitous. The CNCF Cloud Native Definition v1.0 says:</p>
+<p>Cloud native technologies empower organizations to build and run scalable applications in modern, dynamic environments such as public, private, and hybrid clouds. Containers, service meshes, microservices, immutable infrastructure, and declarative APIs exemplify this approach.</p>
+<p>These techniques enable loosely coupled systems that are resilient, manageable, and observable. Combined with robust automation, they allow engineers to make high-impact changes frequently and predictably with minimal toil.</p>
+<p>The Cloud Native Computing Foundation seeks to drive adoption of this paradigm by fostering and sustaining an ecosystem of open source, vendor-neutral projects. We democratize state-of-the-art patterns to make these innovations accessible for everyone.</p>
+</blockquote>
+<h3 id="2-18-Service-Mesh"><a href="#2-18-Service-Mesh" class="headerlink" title="2.18 Service Mesh"></a>2.18 Service Mesh</h3><p>服务网格是一个软件层，用于处理应用程序中服务之间的所有通信。该层由容器化微服务组成。随着应用程序的扩展和微服务数量的增加，监控服务的性能变得越来越困难。为了管理服务之间的连接，服务网格提供了监控、记录、跟踪和流量控制等新功能。它独立于每项服务的代码，这使它能够跨网络边界和多个服务管理系统工作。</p>
+<p>服务网格从单个服务中移除控制服务间通信的逻辑，并将通信抽象到自己的基础设施层。它使用多个网络代理来路由和跟踪服务之间的通信。</p>
+<p>代理充当组织网络和微服务之间的中间网关。所有进出该服务的流量都通过代理服务器路由。单个代理有时被称为 <em><strong>sidecar</strong></em>，因为它们是分开运行的，但在逻辑上位于每个服务旁边。这些代理一起构成了服务网格层。 </p>
+<p><img src="/images/appmesh-proxy.webp" alt="K8s Sidecar Pod"></p>
+<blockquote>
+<p>服务网格（Service Mesh），作为服务间通信的基础设施层。是轻量级高性能网络代理，提供安全的、快速的、可靠地服务间通讯，与实际应用部署一起，但对应用透明。应用作为服务的发起方，只需要用最简单的方式将请求发送给本地的服务网格代理，然后网格代理会进行后续的操作，如服务发现，负载均衡，最后将请求转发给目标服务。</p>
+</blockquote>
+<p><img src="/images/service-mesh-evolution.webp" alt="服务网格的演进历程"></p>
+<p>Sidecar 是容器应用模式的一种，也是在 Service Mesh 中发扬光大的一种模式。使用 Sidecar 模式部署服务网格时，无需在节点上运行代理，但是集群中将运行多个相同的 Sidecar 副本。在 Sidecar 部署方式中，每个应用的容器旁都会部署一个伴生容器，这个容器称之为 Sidecar 容器。Sidecar 接管进出应用容器的所有流量。在 Kubernetes 的 Pod 中，在原有的应用容器旁边注入一个 Sidecar 容器，两个容器共享存储、网络等资源，可以广义的将这个包含了 Sidecar 容器的 Pod 理解为一台主机，两个容器共享主机资源。</p>
+<p>关于 Sidecar 的案例，可以参考：<a target="_blank" rel="noopener" href="https://www.kcl-lang.io/zh-CN/blog/2023-06-05-k8s-sidecar-1">聊聊 K8S 中的 Sidecar 设计模式·第 1 篇</a>。</p>
+<p><img src="/images/sidecar-motorcycle.webp" alt="Sidecar 来源"></p>
+<h3 id="2-19-声明式-API"><a href="#2-19-声明式-API" class="headerlink" title="2.19 声明式 API"></a>2.19 声明式 API</h3><p>命令式：不仅说明要做什么（What），还要说明怎么做（How），机器完全根据指令来操作。</p>
+<p>声明式：只需要说明要做什么（What），重点关注结果，就像领导只负责对齐目标，对于员工怎么做理论上不会太过关心。</p>
+<p>声明式 API 关注的是<strong>“描述目标状态”</strong>，而不是具体的操作步骤。例如：</p>
+<ul>
+<li>你告诉系统<strong>“我要一个 3 节点的 Kubernetes 集群”</strong>，而不是手动创建每个节点。</li>
+<li>你定义<strong>“应用应该运行在 5 个容器实例上”</strong>，而不是手动启动 5 个容器。</li>
+</ul>
+<p>声明式 API 主要用于<strong>基础设施管理</strong>（如 Kubernetes、Terraform），它的核心思想是：</p>
+<ul>
+<li><strong>状态驱动</strong>：用户定义目标状态，系统自动调整以匹配该状态。</li>
+<li><strong>幂等性</strong>：无论调用多少次，最终状态都是一致的。</li>
+<li><strong>自动化</strong>：系统会持续检查并修正偏差。</li>
+</ul>
+<h3 id="2-20-工作负载"><a href="#2-20-工作负载" class="headerlink" title="2.20 工作负载"></a>2.20 工作负载</h3><p>在云计算环境中，<strong>工作负载（Workload）</strong>指的是运行在云上的应用、服务或计算任务，它们消耗云资源（如计算、存储、网络等）。云计算中的工作负载可以分为多个模式，每种模式都有不同的特征和应用场景。</p>
+<h3 id="2-21-DevOps-DevSecOps"><a href="#2-21-DevOps-DevSecOps" class="headerlink" title="2.21 DevOps &amp; DevSecOps"></a>2.21 DevOps &amp; DevSecOps</h3><p>DevOps，即开发运维，概述了软件开发过程和组织文化的转变，这种转变促进了开发和 IT 运营团队之间的协调与协作；这两个团队传统上是分开作业，或者各自为战的。</p>
+<p>在实践中，最好的 DevOps 开发运维流程和文化超越了开发实践和运营，将所有应用程序利益相关者的意见纳入软件开发生命周期。这包括平台和基础架构工程师、安全、合规、治理、风险管理和业务线团队、用户和客户。</p>
+<p>DevOps 开发运维原则代表了过去 20 多年来软件交付流程发展的现状。交付过程已从每隔几个月甚至几年发布一次大型应用程序范围的代码，发展到每天或每天数次发布迭代式较小特性或功能更新。</p>
+<p>归根结底，DevOps 开发运维旨在满足软件用户对频繁创新的新功能以及不间断的性能和可用性不断增长的需求。</p>
+<p>DevOps 源于敏捷。它增加了新的流程和工具，将 CI&#x2F;CD 的持续迭代和自动化扩展到软件交付生命周期的剩余部分。整个过程的每一步，开发部门和运营部门都进行了密切协作。</p>
+<p><img src="/images/devops-loop.webp" alt="DevOps 循环"></p>
+<p>DevSecOps 是在软件开发过程的每个阶段集成安全测试的实践。它包括鼓励开发人员、安全专家和运营团队之间协作的工具和流程，以构建既高效又安全的软件。DevSecOps 带来了文化转型，使安全成为开发软件的每个人的共同责任。</p>
+<p><img src="/images/devsecops-toolchain.webp" alt="The DevSecOps Toolchain"></p>
+<h3 id="2-22-公有云-私有云-混合云"><a href="#2-22-公有云-私有云-混合云" class="headerlink" title="2.22 公有云 &#x2F; 私有云 &#x2F; 混合云"></a>2.22 公有云 &#x2F; 私有云 &#x2F; 混合云</h3><p>在采用云架构时，有三种不同类型的云部署模式可帮助提供云计算服务：公有云、私有云和混合云。</p>
+<p><strong>公有云</strong></p>
+<p>公有云通过互联网提供计算、存储、网络、开发和部署环境以及应用等资源。它们由 Google Cloud 等第三方云服务提供商拥有和运营。</p>
+<p><strong>私有云</strong></p>
+<p>私有云由一个组织（通常位于本地）构建、运行和使用。它们可提供更强的控制力度、自定义和数据安全，但也存在与传统 IT 环境类似的成本和资源限制。</p>
+<p><strong>混合云</strong></p>
+<p>将至少一个私有计算环境（传统 IT 基础设施或私有云，包括边缘）与一个或多个公有云进行混合的环境称为混合云。混合环境可让您利用不同计算环境中的资源和服务，并选择最适合工作负载的资源和服务。</p>
+<p>谈到云部署的类型时，您可能也会听到“<strong>多云环境</strong>”这个词。事实上，行业研究显示，近 90% 的企业现在被视为多云环境，这意味着他们会将来自至少两个不同云服务提供商（无论公有还是私有）的云服务加以结合。采用多云方法可让您更灵活地选择最适合自己特定业务需求的解决方案，同时降低受制于特定供应商的风险。</p>
+<p>多云和混合云有时可以互换使用，但混合云方法可被视为多云方法，而前提是它使用了来自多个公有云提供商的服务。</p>
+<h2 id="0x03-References"><a href="#0x03-References" class="headerlink" title="0x03. References"></a>0x03. References</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://medium.com/@furkan.turkal/how-does-docker-actually-work-the-hard-way-a-technical-deep-diving-c5b8ea2f0422">https://medium.com/@furkan.turkal/how-does-docker-actually-work-the-hard-way-a-technical-deep-diving-c5b8ea2f0422</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2022/04/microservice.html">https://www.ruanyifeng.com/blog/2022/04/microservice.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://mkaschke.medium.com/virtual-machine-vm-vs-container-13ab51f4c177">https://mkaschke.medium.com/virtual-machine-vm-vs-container-13ab51f4c177</a></li>
+<li><a target="_blank" rel="noopener" href="https://katacontainers.io/learn/">https://katacontainers.io/learn/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2018/10/restful-api-best-practices.html">https://www.ruanyifeng.com/blog/2018/10/restful-api-best-practices.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://binhack.readthedocs.io/zh/latest/os/linux/sec/capabilities.html">https://binhack.readthedocs.io/zh/latest/os/linux/sec/capabilities.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://res-static.hc-cdn.cn/cloudbu-site/china/zh-cn/TrustCenter/WithePaper/best%20practices/Shared_Responsibility_Model_for_Cloud_Security.pdf">https://res-static.hc-cdn.cn/cloudbu-site/china/zh-cn/TrustCenter/WithePaper/best%20practices/Shared_Responsibility_Model_for_Cloud_Security.pdf</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.google.com/learn/what-is-cloud-native?hl=zh-CN">https://cloud.google.com/learn/what-is-cloud-native?hl=zh-CN</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/cncf/foundation/blob/main/charter.md">https://github.com/cncf/foundation/blob/main/charter.md</a></li>
+<li><a target="_blank" rel="noopener" href="https://aws.amazon.com/cn/what-is/service-mesh/">https://aws.amazon.com/cn/what-is/service-mesh/</a></li>
+<li><a target="_blank" rel="noopener" href="https://xcbeyond.cn/blog/servicemesh/what-is-servie-mesh/">https://xcbeyond.cn/blog/servicemesh/what-is-servie-mesh/</a></li>
+<li><a target="_blank" rel="noopener" href="https://mosn.io/docs/products/structure/sidecar-pattern/">https://mosn.io/docs/products/structure/sidecar-pattern/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.thebyte.com.cn/architecture/declarative-api.html">https://www.thebyte.com.cn/architecture/declarative-api.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ibm.com/cn-zh/topics/devops">https://www.ibm.com/cn-zh/topics/devops</a></li>
+<li><a target="_blank" rel="noopener" href="https://aws.amazon.com/cn/what-is/devsecops/">https://aws.amazon.com/cn/what-is/devsecops/</a></li>
+<li><a target="_blank" rel="noopener" href="https://security.tencent.com/index.php/blog/msg/150">https://security.tencent.com/index.php/blog/msg/150</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.blog/developer-skills/programming-languages-and-frameworks/introduction-to-selinux/">https://github.blog/developer-skills/programming-languages-and-frameworks/introduction-to-selinux/</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.google.com/discover/types-of-cloud-computing?hl=zh-CN">https://cloud.google.com/discover/types-of-cloud-computing?hl=zh-CN</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Container/" rel="tag"># Container</a>
+              <a href="/tags/Docker/" rel="tag"># Docker</a>
+              <a href="/tags/Cloud/" rel="tag"># Cloud</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/06/03/burp-web-academy-csrf-cross-site-request-forgery-part3/" rel="prev" title="Burp Web Academy CSRF 跨站请求伪造（三）">
+                  <i class="fa fa-angle-left"></i> Burp Web Academy CSRF 跨站请求伪造（三）
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Livermore</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
