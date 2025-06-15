@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://secdroid.github.io/2024/10/24/setup-blog-with-github-pages-and-hexo-in-2025/</loc>
+    
+    <lastmod>2025-06-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://secdroid.github.io/2025/06/15/build-whole-home-mesh-network/</loc>
     
     <lastmod>2025-06-15</lastmod>
@@ -93,15 +102,6 @@
   
   <url>
     <loc>https://secdroid.github.io/2025/04/02/google-gclient-arguments-and-options/</loc>
-    
-    <lastmod>2025-04-02</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://secdroid.github.io/2024/10/24/setup-blog-with-github-pages-and-hexo-in-2025/</loc>
     
     <lastmod>2025-04-02</lastmod>
     
